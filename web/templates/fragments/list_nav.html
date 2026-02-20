@@ -1,0 +1,21 @@
+{{range .}}
+<li class="is-flex is-justify-content-space-between is-align-items-center pr-3">
+    <a href="#" hx-get="/lists/{{.id}}/items" hx-target="#items-container" class="is-flex-grow-1">
+        <i class="fas fa-list-check mr-2 has-text-grey-light"></i> {{.title}}
+        {{if .tags}}
+        <div class="tags mt-1">
+            {{range .tags}}
+            <span class="tag tag-standard is-small"
+                style="font-size: 0.6rem; padding: 0 4px; height: 1.2rem;">{{.}}</span>
+            {{end}}
+        </div>
+        {{end}}
+    </a>
+    <button class="button is-small is-white has-text-danger p-0 h-auto" hx-delete="/items/{{.id}}"
+        hx-target="closest li" hx-confirm="Delete this entire list and all its tasks?" title="Delete List">
+        <i class="fas fa-trash"></i>
+    </button>
+</li>
+{{else}}
+<li class="has-text-grey has-text-centered py-4">No lists yet</li>
+{{end}}

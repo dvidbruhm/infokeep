@@ -1,0 +1,39 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Background: Deeper Blue (Indigo 800/900 mix) -->
+<rect width="64" height="64" rx="12" fill="#312E81"/>
+
+<defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="2" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+</defs>
+
+<!-- Group for Book - Rotated slightly for asymmetry -->
+<g transform="rotate(-5, 32, 32) translate(0, 2)">
+    <!-- Main Book Outline -->
+    <!-- Left Page -->
+    <path d="M32 18C24 16 16 20 12 22V50C16 48 24 44 32 46" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Right Page -->
+    <path d="M32 18C40 16 48 20 52 22V50C48 48 40 44 32 46" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Spine -->
+    <path d="M32 18V46" stroke="white" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Page Details -->
+    <!-- Left Page Lines -->
+    <path d="M14 26C18 24 24 22 30 23" stroke="white" stroke-width="1.5" stroke-opacity="0.6"/>
+    <path d="M14 30C18 28 24 26 30 27" stroke="white" stroke-width="1.5" stroke-opacity="0.6"/>
+    <path d="M14 34C18 32 24 30 30 31" stroke="white" stroke-width="1.5" stroke-opacity="0.6"/>
+
+    <!-- Right Page Lines -->
+    <path d="M50 26C46 24 40 22 34 23" stroke="white" stroke-width="1.5" stroke-opacity="0.6"/>
+    <path d="M50 30C46 28 40 26 34 27" stroke="white" stroke-width="1.5" stroke-opacity="0.6"/>
+    <path d="M50 34C46 32 40 30 34 31" stroke="white" stroke-width="1.5" stroke-opacity="0.6"/>
+</g>
+
+<!-- Spark Element: Glowing Hexagon/Orb -->
+<g transform="translate(2, -2)">
+    <path d="M44 8L48 10L48 14L44 16L40 14L40 10L44 8Z" fill="#FCD34D" filter="url(#glow)"/>
+    <circle cx="44" cy="12" r="1.5" fill="white"/>
+</g>
+</svg>

@@ -1,0 +1,229 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Settings - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <h1 class="title">Settings</h1>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div class="columns">
+    <div class="column is-8">
+        <div class="box">
+            <h2 class="subtitle mb-4"><i class="fas fa-palette mr-2"></i> Appearance</h2>
+            <p class="has-text-grey mb-5">Customize the look and feel of your library. Changes are applied instantly.
+            </p>
+
+            <div class="columns is-multiline is-mobile">
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('light')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-light">
+                        <div class="theme-preview" style="background: #f5f7fa; border-color: #e1e4e8;"></div>
+                        <p class="has-text-weight-bold">Light</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('dark')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-dark">
+                        <div class="theme-preview" style="background: #1a1c23; border-color: #2d303a;"></div>
+                        <p class="has-text-weight-bold">Dark</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('sepia')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-sepia">
+                        <div class="theme-preview" style="background: #eee8d5; border-color: #d6d1bd;"></div>
+                        <p class="has-text-weight-bold">Sepia</p>
+                    </div>
+                </div>
+                <!-- Premium Themes -->
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('dracula')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-dracula">
+                        <div class="theme-preview" style="background: #282a36; border-color: #44475a;"></div>
+                        <p class="has-text-weight-bold">Dracula</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('catppuccin')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-catppuccin">
+                        <div class="theme-preview" style="background: #1e1e2e; border-color: #313244;"></div>
+                        <p class="has-text-weight-bold">Catppuccin</p>
+                    </div>
+                </div>
+
+                <!-- New Themes -->
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('synthwave')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-synthwave">
+                        <div class="theme-preview" style="background: #2b213a; border-color: #493863;"></div>
+                        <p class="has-text-weight-bold">Synthwave</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('nord')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-nord">
+                        <div class="theme-preview" style="background: #2e3440; border-color: #434c5e;"></div>
+                        <p class="has-text-weight-bold">Nord</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('gruvbox')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-gruvbox">
+                        <div class="theme-preview" style="background: #282828; border-color: #504945;"></div>
+                        <p class="has-text-weight-bold">Gruvbox</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('rose-pine')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-rose-pine">
+                        <div class="theme-preview" style="background: #191724; border-color: #44415a;"></div>
+                        <p class="has-text-weight-bold">Rose Pine</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box">
+            <h3 class="title is-4"><i class="fas fa-database mr-2"></i>Data Management</h3>
+            <p class="mb-4">Export your data for backup or transport, or import data from a previous JSON backup.</p>
+
+            <div class="columns">
+                <div class="column is-6">
+                    <h4 class="title is-5">Export Data</h4>
+                    <div class="buttons">
+                        <a href="/settings/export?format=json" class="button is-info is-light">
+                            <span class="icon"><i class="fas fa-file-code"></i></span>
+                            <span>Export JSON</span>
+                        </a>
+                        <a href="/settings/export?format=csv" class="button is-primary is-light">
+                            <span class="icon"><i class="fas fa-file-csv"></i></span>
+                            <span>Export CSV (ZIP)</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <h4 class="title is-5">Import Data</h4>
+                    <form action="/settings/import" method="post" enctype="multipart/form-data">
+                        <div class="field">
+                            <div class="file has-name is-fullwidth mb-2">
+                                <label class="file-label">
+                                    <input class="file-input" type="file" name="importFile" accept=".json">
+                                    <span class="file-cta">
+                                        <span class="file-icon"><i class="fas fa-upload"></i></span>
+                                        <span class="file-label">Select JSON...</span>
+                                    </span>
+                                    <span class="file-name">No file selected</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <button type="submit" class="button is-warning is-fullwidth"
+                                onclick="return confirm('Importing will merge data. Continue?')">
+                                <span class="icon"><i class="fas fa-file-import"></i></span>
+                                <span>Import Data</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Import Success Message -->
+            <div id="import-success-msg" class="notification is-success is-light mt-3 is-hidden">Data imported
+                successfully!</div>
+            <script>
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('import') === 'success') {
+                    document.getElementById('import-success-msg').classList.remove('is-hidden');
+                    // Remove param from URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            </script>
+        </div>
+
+        <div class="box">
+            <h2 class="subtitle mb-4"><i class="fas fa-plug mr-2"></i> Browser Extension API Token</h2>
+            <p class="has-text-grey mb-4">Use this token to authenticate the InfoKeep Firefox extension. Paste it into
+                the extension settings. Regenerating will invalidate the old token.</p>
+            <div class="field has-addons">
+                <div class="control is-expanded">
+                    <input class="input is-family-monospace" type="text" id="api-token-display" value="{{.APIToken}}"
+                        readonly>
+                </div>
+                <div class="control">
+                    <button class="button is-info" onclick="copyToken()">
+                        <span class="icon"><i class="fas fa-copy"></i></span>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <div class="control">
+                    <button class="button is-warning" onclick="regenerateToken()">
+                        <span class="icon"><i class="fas fa-refresh"></i></span>
+                        <span>Regenerate</span>
+                    </button>
+                </div>
+            </div>
+            <p class="help" id="token-copy-msg"></p>
+        </div>
+
+        <div class="box">
+            <h2 class="subtitle mb-4"><i class="fas fa-info-circle mr-2"></i> About InfoKeep</h2>
+            <p class="has-text-grey">InfoKeep is your personal vault for bookmarks, notes, and collections. Minimal,
+                fast, and secure.</p>
+            <p class="is-size-7 has-text-grey-light mt-4">Version 1.0.0 (Mosaic Grid Edition)</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Highlight currently active theme
+    function highlightSelectedTheme() {
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.querySelectorAll('.is-clickable').forEach(card => {
+            card.style.borderColor = 'transparent';
+            card.classList.remove('has-background-white-ter');
+        });
+        const activeCard = document.getElementById('theme-' + currentTheme);
+        if (activeCard) {
+            activeCard.style.borderColor = '#3273dc';
+        }
+    }
+
+    // Wrap the original applyTheme to also update UI highlighting
+    const originalApplyTheme = window.applyTheme;
+    window.applyTheme = function (theme) {
+        originalApplyTheme(theme);
+        highlightSelectedTheme();
+    };
+
+    // Initial highlight
+    highlightSelectedTheme();
+
+    function copyToken() {
+        const input = document.getElementById('api-token-display');
+        navigator.clipboard.writeText(input.value).then(() => {
+            const msg = document.getElementById('token-copy-msg');
+            msg.textContent = 'Token copied to clipboard!';
+            msg.className = 'help is-success';
+            setTimeout(() => msg.textContent = '', 2000);
+        });
+    }
+
+    function regenerateToken() {
+        if (!confirm('This will invalidate the old token. Continue?')) return;
+        fetch('/settings/token/regenerate', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('api-token-display').value = data.token;
+                const msg = document.getElementById('token-copy-msg');
+                msg.textContent = 'Token regenerated! Copy and paste it into the extension.';
+                msg.className = 'help is-warning';
+            });
+    }
+</script>
+{{end}}

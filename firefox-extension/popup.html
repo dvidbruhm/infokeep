@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>InfoKeep Clipper</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="bookmark">Bookmark</button>
+        <button class="tab-btn" data-tab="recipe">Recipe</button>
+        <button class="tab-btn" data-tab="note">Note</button>
+        <button class="tab-btn" data-tab="list">Rated List</button>
+        <button class="tab-btn" data-tab="settings">⚙</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <!-- Settings Tab -->
+    <div id="settings" class="tab-content">
+        <div class="form-group">
+            <label for="api-token-input">API Token</label>
+            <input type="text" id="api-token-input" placeholder="Paste your token from InfoKeep Settings">
+            <p style="font-size: 11px; color: #888; margin-top: 4px;">Find this in InfoKeep → Settings → Browser
+                Extension API Token</p>
+        </div>
+        <button id="save-token-btn" class="submit-btn" style="background:#3273dc;color:#fff;">Save Token</button>
+    </div>
+
+    <!-- Bookmark Form -->
+    <div id="bookmark" class="tab-content active">
+        <form id="bookmark-form">
+            <div class="form-group">
+                <label for="bookmark-title">Title</label>
+                <input type="text" id="bookmark-title" required>
+            </div>
+            <div class="form-group">
+                <label for="bookmark-url">URL</label>
+                <input type="url" id="bookmark-url" required>
+            </div>
+            <div class="form-group">
+                <label for="bookmark-desc">Description</label>
+                <textarea id="bookmark-desc" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="bookmark-tags">Tags</label>
+                <div class="tag-input-container" id="bookmark-tags-container">
+                    <div class="tag-chips"></div>
+                    <input type="text" class="tag-entry" placeholder="dev, article..." id="bookmark-tags-entry">
+                    <input type="hidden" id="bookmark-tags">
+                    <div class="tag-suggestions"></div>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Save Bookmark</button>
+        </form>
+    </div>
+
+    <!-- Recipe Form (Simplified Clipper) -->
+    <div id="recipe" class="tab-content">
+        <div class="clipper-info mb-3">
+            <p class="is-size-7 has-text-grey" style="margin-top: 5px;">Save recipe from current tab.</p>
+        </div>
+        <form id="recipe-form">
+            <div class="form-group">
+                <label for="recipe-tags">Tags</label>
+                <div class="tag-input-container" id="recipe-tags-container">
+                    <div class="tag-chips"></div>
+                    <input type="text" class="tag-entry" placeholder="dinner, healthy..." id="recipe-tags-entry">
+                    <input type="hidden" id="recipe-tags">
+                    <div class="tag-suggestions"></div>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" style="background-color: #f14668; color: #fff;">Save
+                Recipe</button>
+        </form>
+    </div>
+
+    <!-- Note Form -->
+    <div id="note" class="tab-content">
+        <form id="note-form">
+            <div class="form-group">
+                <label for="note-title">Title</label>
+                <input type="text" id="note-title" required>
+            </div>
+            <div class="form-group">
+                <label for="note-content">Content</label>
+                <textarea id="note-content" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="note-tags">Tags</label>
+                <div class="tag-input-container" id="note-tags-container">
+                    <div class="tag-chips"></div>
+                    <input type="text" class="tag-entry" placeholder="ideas, todo..." id="note-tags-entry">
+                    <input type="hidden" id="note-tags">
+                    <div class="tag-suggestions"></div>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" style="background-color: #ffdd57; color: #333;">Save Note</button>
+        </form>
+    </div>
+
+    <!-- Rated List Item Form -->
+    <div id="list" class="tab-content">
+        <form id="list-form">
+            <div class="form-group">
+                <label for="list-select">List</label>
+                <select id="list-select" required>
+                    <option value="" disabled selected>Select a list...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="list-item-title">Item Title</label>
+                <input type="text" id="list-item-title" required>
+            </div>
+            <div class="form-group">
+                <label for="list-item-score">Score (0-10)</label>
+                <input type="number" id="list-item-score" min="0" max="10" required>
+            </div>
+            <div class="form-group">
+                <label for="list-item-note">Note</label>
+                <textarea id="list-item-note" rows="2"></textarea>
+            </div>
+            <!-- Tags not supported for list items yet -->
+            <button type="submit" class="submit-btn" style="background-color: #48c774;">Add to List</button>
+        </form>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "InfoKeep Clipper",
+    "version": "1.1",
+    "description": "Quickly save bookmarks, notes, and list items to InfoKeep.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "http://localhost:8080/*",
+        "http://localhost:8989/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icons/icon.svg"
+    },
+    "icons": {
+        "48": "icons/icon.svg",
+        "96": "icons/icon.svg"
+    }
+}

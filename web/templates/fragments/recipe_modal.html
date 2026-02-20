@@ -1,0 +1,106 @@
+{{define "recipe_modal"}}
+<!-- Recipe Modal (New/Edit) -->
+<div class="modal" id="recipe-modal">
+    <div class="modal-background" onclick="closeRecipeModal()"></div>
+    <div class="modal-card" style="width: 800px; max-width: 95vw;">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="recipe-modal-title">Add New Recipe</p>
+            <button class="delete" aria-label="close" onclick="closeRecipeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="recipe-form" enctype="multipart/form-data">
+                <input type="hidden" id="recipe-edit-id" value="">
+                <input type="hidden" id="recipe-thumbnail" name="thumbnail" value="">
+
+                <!-- Thumbnail Preview -->
+                <div id="thumbnail-preview-container" style="display:none;" class="mb-4">
+                    <figure class="image is-16by9" style="max-width: 400px; margin: 0 auto;">
+                        <img id="thumbnail-preview" src="" alt="Recipe thumbnail"
+                            style="object-fit: cover; border-radius: 6px;">
+                    </figure>
+                </div>
+
+                <div class="field">
+                    <label class="label">Title</label>
+                    <div class="control">
+                        <input class="input" type="text" name="title" id="recipe-title" placeholder="Recipe name"
+                            required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Source URL</label>
+                    <div class="control">
+                        <input class="input" type="url" name="source_url" id="recipe-source-url"
+                            placeholder="https://example.com/recipe">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Ingredients</label>
+                    <div class="control">
+                        <textarea class="textarea" name="ingredients" id="recipe-ingredients" rows="8"
+                            placeholder="Enter each ingredient on a new line&#10;&#10;e.g.&#10;2 cups flour&#10;1 tsp salt&#10;3 eggs"></textarea>
+                    </div>
+                    <p class="help">One ingredient per line</p>
+                </div>
+
+                <div class="field">
+                    <label class="label">Instructions</label>
+                    <div class="control">
+                        <textarea class="textarea" name="instructions" id="recipe-instructions" rows="10"
+                            placeholder="Step-by-step instructions..."></textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Notes</label>
+                    <div class="control">
+                        <textarea class="textarea" name="notes" id="recipe-notes" rows="3"
+                            placeholder="Optional notes, tips, or variations..."></textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Images</label>
+                    <div class="control">
+                        <div class="file has-name is-fullwidth is-boxed">
+                            <label class="file-label">
+                                <input class="file-input" type="file" name="images" id="recipe-images" multiple
+                                    accept="image/*" onchange="previewRecipeImages(this)">
+                                <span class="file-cta">
+                                    <span class="file-icon"><i class="fas fa-upload"></i></span>
+                                    <span class="file-label">Choose images…</span>
+                                </span>
+                                <span class="file-name" id="recipe-images-name">No images selected</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="image-preview-grid" class="columns is-multiline mt-2"></div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Tags</label>
+                    <div class="control">
+                        <div class="tags-input-container">
+                            <div class="tags-chips" id="recipe-tags-chips"></div>
+                            <input class="input" type="text" id="recipe-tags-input"
+                                placeholder="Type a tag and press Enter" autocomplete="off"
+                                list="recipe-tag-suggestions">
+                            <datalist id="recipe-tag-suggestions"></datalist>
+                        </div>
+                        <input type="hidden" name="tags" id="recipe-tags-hidden">
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button" onclick="closeRecipeModal()">Cancel</button>
+                    <button type="button" class="button is-danger" onclick="submitRecipe()">
+                        <span class="icon"><i class="fas fa-save"></i></span>
+                        <span>Save Recipe</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,175 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Bookmarks - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <h1 class="title">Bookmarks</h1>
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+            <button class="button is-link" onclick="openBookmarkModal()">
+                <span class="icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span>Add Bookmark</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div id="main-search-target" hx-get="/bookmarks{{if .ActiveTag}}?tag={{.ActiveTag}}{{end}}" hx-trigger="load"
+    hx-target="this" class="columns is-multiline">
+    <div class="column is-12 has-text-centered">
+        <span class="icon is-large">
+            <i class="fas fa-spinner fa-pulse"></i>
+        </span>
+    </div>
+</div>
+
+<!-- Bookmark Modal (New/Edit) -->
+<div class="modal" id="bookmark-modal">
+    <div class="modal-background" onclick="closeBookmarkModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="modal-title">Add New Bookmark</p>
+            <button class="delete" aria-label="close" onclick="closeBookmarkModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="bookmark-form" hx-post="/bookmarks" hx-target="#main-search-target"
+                hx-on::after-request="closeBookmarkModal(); this.reset()">
+                <div class="field">
+                    <label class="label">URL</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="url" name="url" id="bookmark-url-input"
+                            placeholder="https://example.com" required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-link"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Title</label>
+                    <div class="control">
+                        <input class="input" type="text" name="title" id="bookmark-title-input"
+                            placeholder="My Favorite Site" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Description</label>
+                    <div class="control">
+                        <textarea class="textarea" name="description" id="bookmark-desc-input"
+                            placeholder="A short description..."></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Tags</label>
+                    <div class="control">
+                        <div class="tag-input-container" id="bookmark-tags-container">
+                            <div class="tag-chips"></div>
+                            <input type="text" class="tag-entry" placeholder="Add a tag..."
+                                id="bookmark-tags-input-entry">
+                            <input type="hidden" name="tags" id="bookmark-tags-input">
+                            <div class="tag-suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button" onclick="closeBookmarkModal()">Cancel</button>
+                    <button type="submit" class="button is-link" id="save-btn">Save Bookmark</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script>
+    function openBookmarkModal(isEdit = false) {
+        const modal = document.getElementById('bookmark-modal');
+        const title = document.getElementById('modal-title');
+        const form = document.getElementById('bookmark-form');
+
+        if (!isEdit) {
+            title.textContent = "Add New Bookmark";
+            form.setAttribute('hx-post', '/bookmarks');
+            form.reset();
+            form.setAttribute('hx-post', '/bookmarks');
+            form.reset();
+            // Reset tag input
+            const container = document.getElementById('bookmark-tags-container');
+            container.dataset.existingTags = "";
+            // Re-init tag input if needed or just clear it via helper if we exposed one
+            // Ideally we re-construct or clear the instance.
+            // For now, let's manually clear dom:
+            container.querySelector('.tag-chips').innerHTML = '';
+            document.getElementById('bookmark-tags-input').value = '';
+            // Re-init logic is handled by "new TagInput" which is idempotent if check is good,
+            // but we need to clear data. The simplest way is to clear the hidden input and chips.
+            // Let's rely on edit to populate. For new, it's empty.
+        } else {
+            title.textContent = "Edit Bookmark";
+        }
+        modal.classList.add('is-active');
+        htmx.process(form);
+    }
+
+    function closeBookmarkModal() {
+        document.getElementById('bookmark-modal').classList.remove('is-active');
+    }
+
+    function editBookmark(id) {
+        fetch(`/bookmarks/${id}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(bookmark => {
+                document.getElementById('bookmark-url-input').value = bookmark.url;
+                document.getElementById('bookmark-title-input').value = bookmark.title;
+                document.getElementById('bookmark-desc-input').value = bookmark.description;
+                document.getElementById('bookmark-title-input').value = bookmark.title;
+                document.getElementById('bookmark-desc-input').value = bookmark.description;
+
+                // Populate tags
+                const tagsStr = bookmark.tags ? bookmark.tags.join(',') : '';
+                document.getElementById('bookmark-tags-input').value = tagsStr;
+
+                // Manually trigger chips render for this specific input
+                // We can find the instance or just re-create it safely
+                const container = document.getElementById('bookmark-tags-container');
+                container.dataset.existingTags = tagsStr;
+                // Force re-init or update
+                // Since our class parses dataset on constructor, we might need a method to update.
+                // Let's add a quick helper to the class or just replace innerHTML and re-new.
+                // Better: Update the class to have a setTags method, or just update DOM and re-new.
+                // Given the current JS implementation, re-newing on the same container might duplicate listeners.
+                // Let's update the JS to handle re-init or exposed method.
+                // For now, let's just update the dataset and clear the initialized flag to force re-init?
+                // No, listeners would stack.
+                // Hack: clear initialized flag and remove listeners? No.
+
+                // Let's just create a new TagInput instance every time?
+                // Or better, let's update `tags.js` to expose the instance on the element.
+                if (container._tagInput) {
+                    container._tagInput.setTags(bookmark.tags || []);
+                } else {
+                    container.dataset.existingTags = tagsStr; // Fallback
+                    new TagInput(container);
+                }
+
+                const form = document.getElementById('bookmark-form');
+                form.setAttribute('hx-post', `/bookmarks/${id}`);
+                openBookmarkModal(true);
+            })
+            .catch(err => {
+                console.error("Error loading bookmark:", err);
+                alert("Failed to load bookmark for editing: " + err.message);
+            });
+    }
+</script>
+{{end}}

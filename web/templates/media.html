@@ -1,0 +1,86 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Images - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <h1 class="title">Media Gallery</h1>
+    </div>
+    <div class="level-right">
+        <button class="button is-link" onclick="document.getElementById('upload-modal').classList.add('is-active')">
+            <span class="icon"><i class="fas fa-upload"></i></span>
+            <span>Upload Image</span>
+        </button>
+    </div>
+</div>
+
+<hr>
+
+<div id="main-search-target" hx-get="/media{{if .ActiveTag}}?tag={{.ActiveTag}}{{end}}" hx-trigger="load"
+    hx-target="this" class="columns is-multiline">
+    <div class="column is-12 has-text-centered">
+        <span class="icon is-large"><i class="fas fa-spinner fa-pulse"></i></span>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal" id="upload-modal">
+    <div class="modal-background" onclick="document.getElementById('upload-modal').classList.remove('is-active')"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Upload Image</p>
+            <button class="delete" aria-label="close"
+                onclick="document.getElementById('upload-modal').classList.remove('is-active')"></button>
+        </header>
+        <section class="modal-card-body">
+            <form hx-post="/media" hx-encoding="multipart/form-data" hx-target="#main-search-target"
+                hx-on::after-request="document.getElementById('upload-modal').classList.remove('is-active'); this.reset(); document.getElementById('media-tags-container')._tagInput.setTags([])">
+                <div class="field">
+                    <label class="label">Title (Optional)</label>
+                    <div class="control">
+                        <input class="input" type="text" name="title" placeholder="Vacation Photo, Snapshot, etc.">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Choose Image</label>
+                    <div class="file has-name is-fullwidth">
+                        <label class="file-label">
+                            <input class="file-input" type="file" name="file" accept="image/*" required
+                                onchange="this.parentElement.querySelector('.file-name').textContent = this.files[0].name">
+                            <span class="file-cta">
+                                <span class="file-icon">
+                                    <i class="fas fa-upload"></i>
+                                </span>
+                                <span class="file-label">
+                                    Choose a file…
+                                </span>
+                            </span>
+                            <span class="file-name">
+                                No file selected
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Tags</label>
+                    <div class="control">
+                        <div class="tag-input-container" id="media-tags-container">
+                            <div class="tag-chips"></div>
+                            <input type="text" class="tag-entry" placeholder="photography, memories..."
+                                id="media-tags-input-entry">
+                            <input type="hidden" name="tags" id="media-tags-input">
+                            <div class="tag-suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button"
+                        onclick="document.getElementById('upload-modal').classList.remove('is-active')">Cancel</button>
+                    <button type="submit" class="button is-link">Upload</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+{{end}}

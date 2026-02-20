@@ -1,0 +1,37 @@
+<table class="table is-fullwidth is-hoverable">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th class="has-text-centered">Score</th>
+            <th>Note</th>
+            <th class="has-text-right">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .}}
+        <tr>
+            <td><strong>{{.title}}</strong></td>
+            <td class="has-text-centered">
+                <span class="tag is-info is-light is-medium">{{.score}}/10</span>
+            </td>
+            <td><span class="is-size-7 has-text-grey">{{.note}}</span></td>
+            <td class="has-text-right card-actions">
+                <button class="button is-small is-white has-text-link mr-1" onclick="editRatedListItem({{.id}})"
+                    title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="button is-small is-white has-text-danger" hx-delete="/rated-list-items/{{.id}}"
+                    hx-target="closest tr" hx-confirm="Remove this item?" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="4" class="has-text-centered py-6 has-text-grey">
+                No items in this list yet. Start ranking!
+            </td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>

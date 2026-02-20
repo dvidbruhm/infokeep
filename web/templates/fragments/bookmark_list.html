@@ -1,0 +1,72 @@
+{{range .}}
+<div class="column is-12-mobile is-6-tablet is-4-desktop is-3-widescreen" id="bookmark-{{.id}}">
+    <div class="card bookmark-card h-100">
+        {{if .thumbnail}}
+        <div class="card-image">
+            <figure class="image is-16by9">
+                <a href="{{.url}}" target="_blank">
+                    <img src="{{.thumbnail}}" alt="Preview" style="object-fit: cover;">
+                </a>
+            </figure>
+        </div>
+        {{else}}
+        <div class="card-image">
+            <figure class="image is-16by9 has-background-light is-flex is-align-items-center is-justify-content-center">
+                <span class="icon is-large has-text-grey-lighter">
+                    <i class="fas fa-globe fa-3x"></i>
+                </span>
+            </figure>
+        </div>
+        {{end}}
+        <div class="card-content p-4">
+            <div class="content">
+                <p class="title is-6 mb-2 is-truncated-2" title="{{.title}}">
+                    <a href="{{.url}}" target="_blank" class="has-text-dark">
+                        {{.title}}
+                    </a>
+                </p>
+                <p class="subtitle is-7 has-text-grey mb-3 is-truncated" title="{{.url}}">{{.url}}</p>
+                {{if .description}}
+                <div class="is-size-7 has-text-grey-darker is-truncated-3 mb-3">
+                    {{.description}}
+                </div>
+                {{end}}
+                {{if .tags}}
+                <div class="tags mt-2">
+                    {{range .tags}}
+                    <span class="tag tag-standard is-small">{{.}}</span>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+
+            <div class="is-flex is-justify-content-space-between is-align-items-center mt-auto pt-2 border-top">
+                <p class="is-size-7 has-text-grey">
+                    <i class="fas fa-clock mr-1"></i> {{.created_at}}
+                </p>
+                <div class="card-actions">
+                    <button class="button is-small is-white has-text-link p-1 mr-1" onclick="editBookmark({{.id}})"
+                        title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="button is-small is-white has-text-danger p-1" hx-delete="/items/{{.id}}"
+                        hx-target="#bookmark-{{.id}}" hx-confirm="Are you sure you want to delete this bookmark?"
+                        title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{else}}
+<div class="column is-12 has-text-centered py-6">
+    <div class="box has-background-light">
+        <span class="icon is-large has-text-grey-light mb-4">
+            <i class="fas fa-bookmark fa-3x"></i>
+        </span>
+        <p class="has-text-grey is-size-5">No bookmarks yet.</p>
+        <p class="has-text-grey-light">Start by adding your first favorite link!</p>
+    </div>
+</div>
+{{end}}

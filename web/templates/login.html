@@ -1,0 +1,93 @@
+{{define "title"}}Login - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="columns is-centered mt-6">
+    <div class="column is-4-desktop is-6-tablet">
+        <div class="box">
+            <div class="has-text-centered mb-5">
+                <i class="fas fa-box-archive is-size-1 has-text-link"></i>
+                <h1 class="title is-4 mt-2">Welcome Back</h1>
+                <p class="subtitle is-6">Please log in to your account</p>
+            </div>
+
+            {{if .Error}}
+            <div class="notification is-danger is-light">
+                {{if eq .Error "invalid"}}
+                Invalid username or password.
+                {{else}}
+                An error occurred. Please try again.
+                {{end}}
+            </div>
+            {{end}}
+
+            {{if .Registered}}
+            <div class="notification is-success is-light">
+                Registration successful! Please log in.
+            </div>
+            {{end}}
+
+            <form action="/login" method="POST">
+                <div class="field">
+                    <label class="label">Username</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" name="username" placeholder="Enter your username" required
+                            autofocus>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Password</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" name="password" placeholder="Enter your password" required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" name="stay_connected">
+                            Stay connected longer
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field mt-5">
+                    <button class="button is-link is-fullwidth" type="submit">
+                        Login
+                    </button>
+                </div>
+            </form>
+
+            <hr>
+
+            <div class="has-text-centered">
+                <p>New here? <a href="/register" class="has-text-link">Create an account</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hide search bar on login page via script since layout might still show it
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchContainer = document.querySelector('.main-content .container.mb-6');
+        if (searchContainer) searchContainer.style.display = 'none';
+
+        // Hide sidebar as well if present
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.style.display = 'none';
+
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.style.marginLeft = '0';
+
+        const mobileHeader = document.querySelector('.mobile-header');
+        if (mobileHeader) mobileHeader.style.display = 'none';
+    });
+</script>
+{{end}}

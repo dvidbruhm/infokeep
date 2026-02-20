@@ -1,0 +1,131 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Notes - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <h1 class="title">Notes</h1>
+    </div>
+    <div class="level-right">
+        <button class="button is-warning" onclick="openNoteModal()">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>New Note</span>
+        </button>
+    </div>
+</div>
+
+<hr>
+
+<div id="main-search-target" hx-get="/notes{{if .ActiveTag}}?tag={{.ActiveTag}}{{end}}" hx-trigger="load"
+    hx-target="this" class="columns is-multiline">
+    <div class="column is-12 has-text-centered">
+        <span class="icon is-large"><i class="fas fa-spinner fa-pulse"></i></span>
+    </div>
+</div>
+
+<!-- Note Modal (New/Edit) -->
+<div class="modal" id="note-modal">
+    <div class="modal-background" onclick="closeNoteModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="modal-title">New Note</p>
+            <button class="delete" aria-label="close" onclick="closeNoteModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="note-form" hx-post="/notes" hx-target="#main-search-target"
+                hx-on::after-request="closeNoteModal(); this.reset()">
+                <input type="hidden" name="id" id="note-id">
+                <div class="field">
+                    <label class="label">Title</label>
+                    <div class="control">
+                        <input class="input" type="text" name="title" id="note-title-input"
+                            placeholder="Grocery List, Ideas, etc." required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Content</label>
+                    <div class="control">
+                        <textarea class="textarea" name="content" id="note-content-input" rows="10"
+                            placeholder="Type your note here..." required></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Tags</label>
+                    <div class="control">
+                        <div class="tag-input-container" id="note-tags-container">
+                            <div class="tag-chips"></div>
+                            <input type="text" class="tag-entry" placeholder="Add a tag..." id="note-tags-input-entry">
+                            <input type="hidden" name="tags" id="note-tags-input">
+                            <div class="tag-suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button" onclick="closeNoteModal()">Cancel</button>
+                    <button type="submit" class="button is-warning" id="save-btn">Save Note</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script>
+    function openNoteModal(isEdit = false) {
+        const modal = document.getElementById('note-modal');
+        const title = document.getElementById('modal-title');
+        const form = document.getElementById('note-form');
+        const idInput = document.getElementById('note-id');
+
+        if (!isEdit) {
+            title.textContent = "New Note";
+            form.setAttribute('hx-post', '/notes');
+            idInput.value = "";
+            form.reset();
+            idInput.value = "";
+            form.reset();
+            const container = document.getElementById('note-tags-container');
+            if (container._tagInput) container._tagInput.setTags([]);
+        } else {
+            title.textContent = "Edit Note";
+        }
+        modal.classList.add('is-active');
+        // Tell HTMX to re-process the form since we might have changed hx-post
+        htmx.process(form);
+    }
+
+    function closeNoteModal() {
+        document.getElementById('note-modal').classList.remove('is-active');
+    }
+
+    function editNote(id) {
+        fetch(`/notes/${id}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(note => {
+                document.getElementById('note-id').value = note.id;
+                document.getElementById('note-title-input').value = note.title;
+                document.getElementById('note-content-input').value = note.content;
+                document.getElementById('note-content-input').value = note.content;
+
+                const container = document.getElementById('note-tags-container');
+                if (container._tagInput) {
+                    container._tagInput.setTags(note.tags || []);
+                } else {
+                    container.dataset.existingTags = note.tags ? note.tags.join(',') : '';
+                    new TagInput(container);
+                }
+
+                const form = document.getElementById('note-form');
+                form.setAttribute('hx-post', `/notes/${note.id}`);
+                openNoteModal(true);
+            })
+            .catch(err => {
+                console.error("Error loading note:", err);
+                alert("Failed to load note for editing: " + err.message);
+            });
+    }
+</script>
+{{end}}

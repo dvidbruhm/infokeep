@@ -1,0 +1,68 @@
+{{range .}}
+<div class="column is-12-mobile is-6-tablet is-4-desktop is-3-widescreen" id="recipe-{{.id}}">
+    <a href="/recipes/{{.id}}" class="card recipe-card h-100 is-block" style="text-decoration: none; color: inherit;">
+        {{if .thumbnail}}
+        <div class="card-image">
+            <figure class="image is-16by9">
+                <img src="{{.thumbnail}}" alt="{{.title}}" style="object-fit: cover;">
+            </figure>
+        </div>
+        {{else}}
+        <div class="card-image">
+            <figure class="image is-16by9 has-background-light is-flex is-align-items-center is-justify-content-center">
+                <span class="icon is-large has-text-grey-lighter">
+                    <i class="fas fa-utensils fa-3x"></i>
+                </span>
+            </figure>
+        </div>
+        {{end}}
+        <div class="card-content p-4">
+            <div class="content">
+                <p class="title is-6 mb-2 is-truncated-2" title="{{.title}}">
+                    {{.title}}
+                </p>
+                {{if .ingredients}}
+                <p class="is-size-7 has-text-grey mb-2"
+                    style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{.ingredients}}
+                </p>
+                {{end}}
+                {{if .tags}}
+                <div class="tags mt-2">
+                    {{range .tags}}
+                    <span class="tag tag-standard is-small">{{.}}</span>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+
+            <div class="is-flex is-justify-content-space-between is-align-items-center mt-auto pt-2 border-top">
+                <p class="is-size-7 has-text-grey">
+                    <i class="fas fa-clock mr-1"></i> {{.created_at}}
+                </p>
+                <div class="card-actions">
+                    <button class="button is-small is-white has-text-link p-1 mr-1"
+                        onclick="event.preventDefault(); event.stopPropagation(); editRecipe({{.id}})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="button is-small is-white has-text-danger p-1" hx-delete="/items/{{.id}}"
+                        hx-target="#recipe-{{.id}}" hx-confirm="Are you sure you want to delete this recipe?"
+                        onclick="event.preventDefault(); event.stopPropagation()" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+{{else}}
+<div class="column is-12 has-text-centered py-6">
+    <div class="box has-background-light">
+        <span class="icon is-large has-text-grey-light mb-4">
+            <i class="fas fa-utensils fa-3x"></i>
+        </span>
+        <p class="has-text-grey is-size-5">No recipes yet.</p>
+        <p class="has-text-grey-light">Start by adding your first recipe!</p>
+    </div>
+</div>
+{{end}}

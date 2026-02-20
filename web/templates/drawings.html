@@ -1,0 +1,376 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Drawings - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <h1 class="title">My Drawings</h1>
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+            <button class="button is-link" onclick="openDrawingModal()">
+                <span class="icon"><i class="fas fa-plus"></i></span>
+                <span>New Drawing</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="main-search-target" hx-get="/drawings{{if .ActiveTag}}?tag={{.ActiveTag}}{{end}}"
+    hx-trigger="load, newDrawing from:body" hx-target="this" class="columns is-multiline">
+    <div class="column is-12 has-text-centered py-6">
+        <p class="has-text-grey">
+            <i class="fas fa-spinner fa-pulse mr-2"></i> Loading drawings...
+        </p>
+    </div>
+</div>
+
+<!-- Drawing Modal -->
+<div class="modal" id="drawing-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card" style="width: 90%; max-width: 1000px;">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="drawing-modal-title">New Drawing</p>
+            <button class="delete" aria-label="close" onclick="closeDrawingModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <div class="control">
+                    <input class="input" type="text" id="drawing-title" placeholder="Give your masterpiece a title..."
+                        required>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <div class="tag-input-container" id="drawing-tags-container">
+                        <div class="tag-chips"></div>
+                        <input type="text" class="tag-entry" placeholder="art, sketch, draft..."
+                            id="drawing-tags-input-entry">
+                        <input type="hidden" name="tags" id="drawing-tags">
+                        <div class="tag-suggestions"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawing-toolbar box mb-3 p-3 has-background-light is-flex is-align-items-center is-flex-wrap-wrap"
+                style="gap: 1rem; border: 1px solid var(--border-color);">
+                <div class="field mb-0">
+                    <label class="label is-size-7 mb-1">Color</label>
+                    <div class="control is-flex is-align-items-center" style="gap: 0.5rem;">
+                        <div id="color-swatches" class="is-flex" style="gap: 4px;">
+                            <button class="button is-rounded p-0 color-swatch is-active" data-color="#3273dc"
+                                style="width: 28px; height: 28px; background: #3273dc; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                            <button class="button is-rounded p-0 color-swatch" data-color="#48c774"
+                                style="width: 28px; height: 28px; background: #48c774; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                            <button class="button is-rounded p-0 color-swatch" data-color="#ffdd57"
+                                style="width: 28px; height: 28px; background: #ffdd57; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                            <button class="button is-rounded p-0 color-swatch" data-color="#f14668"
+                                style="width: 28px; height: 28px; background: #f14668; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                            <button class="button is-rounded p-0 color-swatch" data-color="#363636"
+                                style="width: 28px; height: 28px; background: #363636; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                            <button class="button is-rounded p-0 color-swatch" data-color="#ffffff"
+                                style="width: 28px; height: 28px; background: #ffffff; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                        </div>
+                        <input type="color" id="pen-color" value="#3273dc" class="input p-0"
+                            style="width: 35px; height: 35px; border: none; cursor: pointer; background: transparent; vertical-align: middle;">
+                    </div>
+                </div>
+
+                <div class="field mb-0">
+                    <label class="label is-size-7 mb-1">Background</label>
+                    <div class="control">
+                        <input type="color" id="bg-color" value="#ffffff" class="input p-0"
+                            style="width: 35px; height: 35px; border: none; cursor: pointer; background: transparent; vertical-align: middle;">
+                    </div>
+                </div>
+
+                <div class="field mb-0 is-flex-grow-1" style="min-width: 150px;">
+                    <label class="label is-size-7 mb-1">Brush Size: <span id="size-val">5</span>px</label>
+                    <div class="control">
+                        <input type="range" id="pen-size" min="1" max="50" value="5" class="is-fullwidth"
+                            style="cursor: pointer;">
+                    </div>
+                </div>
+
+                <div class="brush-preview-container has-text-centered" style="width: 60px;">
+                    <label class="label is-size-7 mb-1">Preview</label>
+                    <div id="brush-preview"
+                        style="width: 50px; height: 50px; background: var(--app-bg); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; border-radius: 4px; margin: 0 auto;">
+                        <div id="brush-dot" style="width: 5px; height: 5px; background: #3273dc; border-radius: 50%;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="buttons mb-0">
+                    <button class="button is-small is-danger is-outlined" onclick="clearCanvas()" title="Clear Canvas">
+                        <i class="fas fa-trash-can mr-1"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-container box p-0 mb-0"
+                style="background: white; border: 1px solid var(--border-color); height: 500px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden;">
+                <canvas id="paint-canvas" width="800" height="400"
+                    style="background: white; cursor: crosshair; touch-action: none;"></canvas>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons is-right is-fullwidth">
+                <button class="button" onclick="closeDrawingModal()">Discard</button>
+                <button class="button is-link" id="save-drawing-btn" onclick="saveDrawing()">
+                    <span class="icon"><i class="fas fa-save"></i></span>
+                    <span>Save to Library</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('drawing-modal');
+    const canvas = document.getElementById('paint-canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('pen-color');
+    const bgColorPicker = document.getElementById('bg-color');
+    const sizePicker = document.getElementById('pen-size');
+    const sizeVal = document.getElementById('size-val');
+    const brushDot = document.getElementById('brush-dot');
+    const colorSwatches = document.querySelectorAll('.color-swatch');
+
+    let drawing = false;
+    let points = [];
+    let currentDrawingId = null;
+
+    // Set brush preview
+    function updateBrushPreview() {
+        if (!sizeVal || !sizePicker || !brushDot || !colorPicker) return;
+        sizeVal.textContent = sizePicker.value;
+        brushDot.style.width = sizePicker.value + 'px';
+        brushDot.style.height = sizePicker.value + 'px';
+        brushDot.style.background = colorPicker.value;
+    }
+
+    // Swatch selection
+    colorSwatches.forEach(swatch => {
+        swatch.addEventListener('click', () => {
+            colorSwatches.forEach(s => s.classList.remove('is-active', 'has-border-dark'));
+            swatch.classList.add('is-active');
+            colorPicker.value = swatch.getAttribute('data-color');
+            updateBrushPreview();
+        });
+    });
+
+    sizePicker.addEventListener('input', updateBrushPreview);
+    colorPicker.addEventListener('input', () => {
+        // Remove active state from swatches if custom color is picked
+        colorSwatches.forEach(s => s.classList.remove('is-active'));
+        updateBrushPreview();
+    });
+
+    bgColorPicker.addEventListener('input', () => {
+        canvas.style.backgroundColor = bgColorPicker.value;
+    });
+
+    function openDrawingModal(isEdit = false) {
+        currentDrawingId = isEdit ? currentDrawingId : null;
+        document.getElementById('drawing-modal-title').textContent = isEdit ? "Edit Drawing" : "New Drawing";
+
+        modal.classList.add('is-active');
+        // Give the browser a moment to render the modal before resizing canvas
+        setTimeout(() => {
+            if (!isEdit) {
+                clearCanvas();
+                clearCanvas();
+                document.getElementById('drawing-title').value = "";
+
+                const container = document.getElementById('drawing-tags-container');
+                if (container._tagInput) container._tagInput.setTags([]);
+            }
+            updateBrushPreview();
+        }, 10);
+    }
+
+    function closeDrawingModal() {
+        modal.classList.remove('is-active');
+    }
+
+    function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        drawing = true;
+        const pos = getPointerPos(e);
+        points = [pos];
+
+        ctx.lineWidth = sizePicker.value;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = colorPicker.value;
+
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    }
+
+    function stopDrawing() {
+        if (!drawing) return;
+        drawing = false;
+        points = [];
+        ctx.closePath();
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+
+        const pos = getPointerPos(e);
+        points.push(pos);
+
+        if (points.length < 3) {
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            return;
+        }
+
+        // Quadratic curve smoothing (Antialiasing/Path smoothing)
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+
+        for (var i = 1; i < points.length - 2; i++) {
+            var xc = (points[i].x + points[i + 1].x) / 2;
+            var yc = (points[i].y + points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+        }
+
+        // For the last 2 points
+        ctx.quadraticCurveTo(
+            points[i].x,
+            points[i].y,
+            points[i + 1].x,
+            points[i + 1].y
+        );
+        ctx.stroke();
+    }
+
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDrawing);
+
+    // Touch Events
+    canvas.addEventListener('touchstart', (e) => {
+        startDrawing(e);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+        draw(e);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // We don't fill with white anymore, we use the CSS background-color of the container
+        // or we can fill with the selected bg color if we want it to be part of the image
+        // To make it look "live", we just clear the drawing layer.
+    }
+
+    function saveDrawing() {
+        const title = document.getElementById('drawing-title').value;
+        if (!title) {
+            alert('Please enter a title for your drawing');
+            return;
+        }
+
+        // Create a temporary canvas to merge background and drawing
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Fill background
+        tempCtx.fillStyle = bgColorPicker.value;
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Draw the drawing on top
+        tempCtx.drawImage(canvas, 0, 0);
+
+        const dataURL = tempCanvas.toDataURL('image/png');
+        const saveBtn = document.getElementById('save-drawing-btn');
+        saveBtn.classList.add('is-loading');
+
+        const endpoint = currentDrawingId ? `/drawings/${currentDrawingId}` : '/drawings';
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'title': title,
+                'image': dataURL,
+                'tags': document.getElementById('drawing-tags').value
+            })
+        })
+            .then(response => {
+                if (response.ok) {
+                    closeDrawingModal();
+                    document.body.dispatchEvent(new Event('newDrawing')); // Trigger HTMX reload
+                } else {
+                    response.text().then(text => console.error("Save failure:", text));
+                    alert('Failed to save drawing');
+                }
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                alert('Connection error while saving');
+            })
+            .finally(() => {
+                saveBtn.classList.remove('is-loading');
+            });
+    }
+
+    function editDrawing(id) {
+        fetch(`/drawings/${id}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(drawing => {
+                currentDrawingId = drawing.id;
+                document.getElementById('drawing-title').value = drawing.title;
+                currentDrawingId = drawing.id;
+                document.getElementById('drawing-title').value = drawing.title;
+
+                const container = document.getElementById('drawing-tags-container');
+                if (container._tagInput) {
+                    container._tagInput.setTags(drawing.tags || []);
+                } else {
+                    container.dataset.existingTags = drawing.tags ? drawing.tags.join(',') : '';
+                    new TagInput(container);
+                }
+
+                const img = new Image();
+                img.onload = function () {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    openDrawingModal(true);
+                };
+                img.src = drawing.file_path;
+            })
+            .catch(err => {
+                console.error("Error loading drawing:", err);
+                alert("Failed to load drawing for editing: " + err.message);
+            });
+    }
+</script>
+{{end}}

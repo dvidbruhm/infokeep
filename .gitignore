@@ -1,0 +1,26 @@
+# Binaries
+infokeep.exe
+infokeep.exe~
+infokeep
+
+# Database
+*.db
+*.db-journal
+
+# Logs
+*.log
+*.err
+
+# User Uploads
+web/static/uploads/*
+!web/static/uploads/.gitkeep
+
+# Packaged Extension
+firefox-extension.zip
+
+# Debug files
+debug_*.html
+
+# OS specific
+.DS_Store
+Thumbs.db

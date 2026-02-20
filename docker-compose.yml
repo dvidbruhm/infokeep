@@ -1,0 +1,14 @@
+services:
+  infokeep:
+    build: .
+    container_name: infokeep
+    restart: unless-stopped
+    ports:
+      - "8989:8080"
+    volumes:
+      # Persist the SQLite database
+      - ./infokeep.db:/app/infokeep.db
+      # Persist uploaded media
+      - ./web/static/uploads:/app/web/static/uploads
+    environment:
+      - PORT=8080

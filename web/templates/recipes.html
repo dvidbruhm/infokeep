@@ -1,0 +1,72 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Recipes - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <h1 class="title"><i class="fas fa-utensils has-text-danger mr-2"></i>Recipes</h1>
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+            <button class="button is-link is-outlined mr-2" onclick="openImportRecipeModal()">
+                <span class="icon"><i class="fas fa-download"></i></span>
+                <span>Import from URL</span>
+            </button>
+            <button class="button is-danger" onclick="openRecipeModal()">
+                <span class="icon"><i class="fas fa-plus"></i></span>
+                <span>Add Recipe</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div id="main-search-target" hx-get="/recipes{{if .ActiveTag}}?tag={{.ActiveTag}}{{end}}" hx-trigger="load"
+    hx-target="this" class="columns is-multiline">
+    <div class="column is-12 has-text-centered">
+        <span class="icon is-large"><i class="fas fa-spinner fa-pulse"></i></span>
+    </div>
+</div>
+
+<!-- Import from URL Modal -->
+<div class="modal" id="import-recipe-modal">
+    <div class="modal-background" onclick="closeImportRecipeModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title"><i class="fas fa-download mr-2"></i>Import Recipe from URL</p>
+            <button class="delete" aria-label="close" onclick="closeImportRecipeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <label class="label">Recipe URL</label>
+                <div class="control has-icons-left">
+                    <input class="input" type="url" id="import-url" placeholder="https://www.allrecipes.com/recipe/..."
+                        required>
+                    <span class="icon is-left"><i class="fas fa-link"></i></span>
+                </div>
+                <p class="help">Paste a URL from a recipe website (AllRecipes, Food Network, etc.)</p>
+            </div>
+            <div id="import-status" style="display:none;" class="notification is-info is-light">
+                <i class="fas fa-spinner fa-pulse mr-2"></i> Importing recipe...
+            </div>
+            <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button class="button" onclick="closeImportRecipeModal()">Cancel</button>
+                <button class="button is-link" onclick="importRecipeFromURL()">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Import</span>
+                </button>
+            </div>
+        </section>
+    </div>
+</div>
+
+{{template "recipe_modal" .}}
+
+<!-- Recipe Detail Modal (Removed, using full page) -->
+
+<!-- Scripts moved to static/js/recipes.js -->
+{{end}}

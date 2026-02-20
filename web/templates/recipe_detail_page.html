@@ -1,0 +1,152 @@
+{{template "layout.html" .}}
+
+{{define "title"}}{{if .Recipe.title}}{{.Recipe.title}} - InfoKeep{{else}}Recipe - InfoKeep{{end}}{{end}}
+
+{{define "content"}}
+<div class="container is-fluid">
+    <!-- Header: Thumbnail, Title, Tags -->
+    <div class="columns is-vcentered mb-5">
+        {{if .Recipe.thumbnail}}
+        <div class="column is-narrow">
+            <figure class="image is-128x128">
+                <img src="{{.Recipe.thumbnail}}" alt="{{.Recipe.title}}" style="object-fit: cover; border-radius: 8px;">
+            </figure>
+        </div>
+        {{end}}
+        <div class="column">
+            <h1 class="title is-2">{{.Recipe.title}}</h1>
+            {{if .Recipe.source_url}}
+            <p class="subtitle is-6 mb-2">
+                <a href="{{.Recipe.source_url}}" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-external-link-alt mr-1"></i> Source: {{.Recipe.source_url}}
+                </a>
+            </p>
+            {{end}}
+            {{if .Recipe.tags}}
+            <div class="tags are-medium">
+                {{range .Recipe.tags}}
+                <span class="tag is-info is-light">{{.}}</span>
+                {{end}}
+            </div>
+            {{end}}
+
+            <div class="buttons mt-4">
+                <button class="button is-link is-outlined" onclick="editRecipe({{.Recipe.id}})">
+                    <span class="icon"><i class="fas fa-edit"></i></span>
+                    <span>Edit</span>
+                </button>
+                <a href="/recipes" class="button">
+                    <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                    <span>Back to Recipes</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns">
+        <!-- Left: Ingredients (Sidebar size) -->
+        <div class="column is-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <p class="card-header-title"><i class="fas fa-list mr-2"></i>Ingredients</p>
+                </div>
+                <div class="card-content">
+                    <div class="content">
+                        <ul>
+                            {{range .IngredientsList}}
+                            <li>{{.}}</li>
+                            {{else}}
+                            <li>No ingredients listed.</li>
+                            {{end}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Instructions and Notes -->
+        <div class="column">
+            <div class="card mb-4" style="min-height: 400px;">
+                <div class="card-header">
+                    <p class="card-header-title"><i class="fas fa-clipboard-list mr-2"></i>Instructions</p>
+                </div>
+                <div class="card-content">
+                    <div class="content">
+                        {{range .InstructionsList}}
+                        <p class="mb-2">{{.}}</p>
+                        {{else}}
+                        <p>No instructions listed.</p>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            {{if .Recipe.notes}}
+            <div class="card is-warning-light mb-4">
+                <div class="card-header">
+                    <p class="card-header-title"><i class="fas fa-sticky-note mr-2"></i>Notes</p>
+                </div>
+                <div class="card-content">
+                    <div class="content" style="white-space: pre-wrap;">{{.Recipe.notes}}</div>
+                </div>
+            </div>
+            {{end}}
+
+            <!-- Bottom: Gallery (if not handled below) -->
+            <!-- User asked for images below both sections. I'll put it in a new row below columns -->
+        </div>
+    </div>
+
+    <!-- Bottom: Gallery -->
+    {{if .Recipe.images}}
+    <div class="box mt-5">
+        <h3 class="title is-4"><i class="fas fa-images mr-2"></i>Gallery</h3>
+        <div class="columns is-multiline">
+            {{range .Recipe.images}}
+            <div class="column is-3">
+                <figure class="image is-4by3">
+                    <img src="{{.}}" alt="Recipe image" style="object-fit: cover; border-radius: 6px; cursor: pointer;"
+                        onclick="openImageModal(this.src)">
+                </figure>
+            </div>
+            {{end}}
+        </div>
+    </div>
+    {{end}}
+</div>
+
+<!-- Image Modal -->
+<div class="modal" id="image-modal">
+    <div class="modal-background" onclick="closeImageModal()"></div>
+    <div class="modal-content">
+        <p class="image">
+            <img id="modal-image" src="" alt="">
+        </p>
+    </div>
+    <button class="modal-close is-large" aria-label="close" onclick="closeImageModal()"></button>
+</div>
+
+<!-- Edit Recipe Modal (Reused from recipes.html structure, but effectively we need global modal or include it) -->
+<!-- Since we are on a detail page, 'editRecipe' JS function needs to open a modal. 
+     The 'recipes.html' defines the modal. If I navigate to /recipes/1, I am NOT on recipes.html anymore.
+     I need to duplicate the modal HTML here or include a fragment.
+     Better: Put the modal in layout.html? Or include 'recipes.html' fragment? 
+     For now, I will include the modal markup here. -->
+
+{{template "recipe_modal" .}}
+
+<script>
+    function openImageModal(src) {
+        document.getElementById('modal-image').src = src;
+        document.getElementById('image-modal').classList.add('is-active');
+    }
+
+    function closeImageModal() {
+        document.getElementById('image-modal').classList.remove('is-active');
+    }
+
+    // Copy the edit logic or ensure it's available
+    // I need to implement editRecipe here or include it.
+</script>
+{{end}}

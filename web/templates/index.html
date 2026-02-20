@@ -1,0 +1,238 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Dashboard - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level">
+    <div class="level-left">
+        <h1 class="title">My Library</h1>
+    </div>
+</div>
+
+<div class="columns" id="main-search-target">
+    <div class="column is-12">
+        <!-- Bookmarks Section -->
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between">
+            <h2 class="title is-4 mb-0"><i class="fas fa-bookmark has-text-info mr-2"></i> Recent Bookmarks</h2>
+            <a href="/bookmarks" class="button is-small is-link is-outlined">View All</a>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Bookmarks}}
+            <div class="column is-12-mobile is-6-tablet is-4-desktop is-3-widescreen">
+                <a href="/bookmarks#bookmark-{{.id}}" class="card bookmark-card h-100 is-clickable"
+                    style="display: block;">
+                    {{if .thumbnail}}
+                    <div class="card-image">
+                        <figure class="image is-16by9">
+                            <img src="{{.thumbnail}}" alt="{{.title}}" style="object-fit: cover;">
+                        </figure>
+                    </div>
+                    {{end}}
+                    <div class="card-content p-4">
+                        <div class="is-flex is-align-items-center mb-2">
+                            {{if .favicon}}
+                            <img src="{{.favicon}}" class="mr-2" style="width: 16px; height: 16px;">
+                            {{else}}
+                            <i class="fas fa-globe has-text-grey-light mr-2"></i>
+                            {{end}}
+                            <p class="title is-6 mb-0">{{.title}}</p>
+                        </div>
+                        <p class="is-size-7 has-text-grey">{{.url}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-2">
+                            {{range .tags}}
+                            <span class="tag tag-standard is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{else}}
+            <div class="column is-12">
+                <div class="box has-text-centered py-5 has-text-grey">
+                    <p>No bookmarks yet.</p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Notes Section -->
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between">
+            <h2 class="title is-4 mb-0"><i class="fas fa-note-sticky has-text-warning mr-2"></i> Recent Notes</h2>
+            <a href="/notes" class="button is-small is-link is-outlined">View All</a>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Notes}}
+            <div class="column is-4">
+                <a href="/notes#note-{{.id}}" class="card h-100 is-clickable"
+                    style="display: block; text-decoration: none; color: inherit;">
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        <p class="is-size-7 has-text-grey"
+                            style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{.content}}
+                        </p>
+                        {{if .tags}}
+                        <div class="tags mt-2">
+                            {{range .tags}}
+                            <span class="tag tag-standard is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{else}}
+            <div class="column is-12">
+                <div class="box has-text-centered py-5 has-text-grey">
+                    <p>No notes yet.</p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Drawings Section -->
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between">
+            <h2 class="title is-4 mb-0"><i class="fas fa-palette has-text-success mr-2"></i> Recent Drawings</h2>
+            <a href="/drawings" class="button is-small is-link is-outlined">View All</a>
+        </div>
+        <div class="columns is-multiline">
+            {{range .Drawings}}
+            <div class="column is-3">
+                <a href="/drawings#drawing-{{.id}}" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    <div class="card-image border-bottom">
+                        <figure class="image is-4by3">
+                            <img src="{{.file_path}}" alt="{{.title}}" style="object-fit: contain; padding: 10px;">
+                        </figure>
+                    </div>
+                    <div class="card-content p-2 has-text-centered">
+                        <p class="is-size-7 has-text-weight-bold">{{.title}}</p>
+                        {{if .tags}}
+                        <div class="tags is-centered mt-1">
+                            {{range .tags}}
+                            <span class="tag tag-standard is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{else}}
+            <div class="column is-12">
+                <div class="box has-text-centered py-5 has-text-grey">
+                    <p>No drawings yet.</p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Rated Lists Section -->
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between mt-6">
+            <h2 class="title is-4 mb-0"><i class="fas fa-star has-text-danger mr-2"></i> Recent Rated Lists</h2>
+            <a href="/rated-lists" class="button is-small is-link is-outlined">View All</a>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .RatedLists}}
+            <div class="column is-4">
+                <a href="/rated-lists?id={{.id}}" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        <p class="is-size-7 has-text-grey">Created: {{.created_at}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-1">
+                            {{range .tags}}
+                            <span class="tag tag-standard is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{else}}
+            <div class="column is-12">
+                <div class="box has-text-centered py-5 has-text-grey">
+                    <p>No rated lists yet.</p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Checklists Section -->
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between mt-6">
+            <h2 class="title is-4 mb-0"><i class="fas fa-list-check has-text-primary mr-2"></i> Recent Checklists</h2>
+            <a href="/lists" class="button is-small is-link is-outlined">View All</a>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Checklists}}
+            <div class="column is-4">
+                <a href="/lists?id={{.id}}" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        <p class="is-size-7 has-text-grey">Created: {{.created_at}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-1">
+                            {{range .tags}}
+                            <span class="tag tag-standard is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{else}}
+            <div class="column is-12">
+                <div class="box has-text-centered py-5 has-text-grey">
+                    <p>No checklists yet.</p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Recipes Section -->
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between mt-6">
+            <h2 class="title is-4 mb-0"><i class="fas fa-utensils has-text-danger mr-2"></i> Recent Recipes</h2>
+            <a href="/recipes" class="button is-small is-link is-outlined">View All</a>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Recipes}}
+            <div class="column is-12-mobile is-6-tablet is-4-desktop is-3-widescreen">
+                <a href="/recipes" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    {{if .thumbnail}}
+                    <div class="card-image">
+                        <figure class="image is-16by9">
+                            <img src="{{.thumbnail}}" alt="{{.title}}" style="object-fit: cover;">
+                        </figure>
+                    </div>
+                    {{end}}
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        <p class="is-size-7 has-text-grey">Created: {{.created_at}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-1">
+                            {{range .tags}}
+                            <span class="tag tag-standard is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{else}}
+            <div class="column is-12">
+                <div class="box has-text-centered py-5 has-text-grey">
+                    <p>No recipes yet.</p>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Add extra space at bottom for scrolling -->
+        <div class="py-6"></div>
+    </div>
+</div>
+{{end}}

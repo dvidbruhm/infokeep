@@ -1,0 +1,29 @@
+<ul class="menu-list">
+    {{range .}}
+    <li class="mb-2">
+        <label class="checkbox card p-3 is-flex is-align-items-center" style="width: 100%; cursor: pointer;">
+            <div class="is-flex is-align-items-center is-flex-grow-1">
+                <input type="checkbox" class="mr-3" hx-post="/list-items/{{.id}}/toggle" hx-trigger="change"
+                    hx-vals="js:{completed: event.target.checked}" {{if .completed}}checked{{end}}>
+                <span style="{{if .completed}}text-decoration: line-through; color: var(--text-muted);{{end}}">
+                    {{.content}}
+                </span>
+            </div>
+            <div class="is-flex card-actions">
+                <button class="button is-small is-white has-text-link p-1 mr-1" onclick="editListItem({{.id}}, event)"
+                    title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="button is-small is-white has-text-danger p-1" hx-delete="/list-items/{{.id}}"
+                    hx-target="closest li" hx-confirm="Remove this task?" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </label>
+    </li>
+    {{else}}
+    <li class="has-text-centered py-6 has-text-grey">
+        <p>No tasks yet. Add one below!</p>
+    </li>
+    {{end}}
+</ul>

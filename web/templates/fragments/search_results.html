@@ -1,0 +1,164 @@
+<div class="column is-12">
+    <div class="box">
+        <h2 class="title is-4">Search Results</h2>
+        <hr>
+
+        {{if .Bookmarks}}
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between">
+            <h2 class="title is-4 mb-0"><i class="fas fa-bookmark has-text-info mr-2"></i> Bookmarks</h2>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Bookmarks}}
+            <div class="column is-12-mobile is-6-tablet is-4-desktop">
+                <a href="/bookmarks#bookmark-{{.id}}" class="card bookmark-card h-100 is-clickable"
+                    style="display: block;">
+                    {{if .thumbnail}}
+                    <div class="card-image">
+                        <figure class="image is-16by9">
+                            <img src="{{.thumbnail}}" alt="{{.title}}" style="object-fit: cover;">
+                        </figure>
+                    </div>
+                    {{end}}
+                    <div class="card-content p-4">
+                        <div class="is-flex is-align-items-center mb-2">
+                            {{if .favicon}}
+                            <img src="{{.favicon}}" class="mr-2" style="width: 16px; height: 16px;">
+                            {{else}}
+                            <i class="fas fa-globe has-text-grey-light mr-2"></i>
+                            {{end}}
+                            <p class="title is-6 mb-0">{{.title}}</p>
+                        </div>
+                        <p class="is-size-7 has-text-grey is-truncated">{{.url}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-1">
+                            {{range .tags}}
+                            <span class="tag is-info is-light is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        {{if .Notes}}
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between">
+            <h2 class="title is-4 mb-0"><i class="fas fa-note-sticky has-text-warning mr-2"></i> Notes</h2>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Notes}}
+            <div class="column is-12-mobile is-6-tablet is-4-desktop">
+                <a href="/notes#note-{{.id}}" class="card h-100 is-clickable"
+                    style="display: block; text-decoration: none; color: inherit;">
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        {{.content}}
+                        </p>
+                        {{if .tags}}
+                        <div class="tags mt-2">
+                            {{range .tags}}
+                            <span class="tag is-warning is-light is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        {{if .Drawings}}
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between">
+            <h2 class="title is-4 mb-0"><i class="fas fa-palette has-text-success mr-2"></i> Drawings</h2>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Drawings}}
+            <div class="column is-6-mobile is-4-tablet is-3-desktop">
+                <a href="/drawings#drawing-{{.id}}" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    <div class="card-image border-bottom">
+                        <figure class="image is-4by3">
+                            <img src="{{.file_path}}" alt="{{.title}}" style="object-fit: contain; padding: 10px;">
+                        </figure>
+                    </div>
+                    <div class="card-content p-2 has-text-centered">
+                        <p class="is-size-7 has-text-weight-bold">{{.title}}</p>
+                        {{if .tags}}
+                        <div class="tags is-centered mt-1">
+                            {{range .tags}}
+                            <span class="tag is-success is-light is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        {{if .RatedLists}}
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between mt-6">
+            <h2 class="title is-4 mb-0"><i class="fas fa-star has-text-danger mr-2"></i> Rated Lists</h2>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .RatedLists}}
+            <div class="column is-12-mobile is-6-tablet is-4-desktop">
+                <a href="/rated-lists?id={{.id}}" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        <p class="is-size-7 has-text-grey">Created: {{.created_at}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-1">
+                            {{range .tags}}
+                            <span class="tag is-danger is-light is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        {{if .Checklists}}
+        <div class="section-header mb-5 is-flex is-align-items-center is-justify-content-space-between mt-6">
+            <h2 class="title is-4 mb-0"><i class="fas fa-list-check has-text-primary mr-2"></i> Checklists</h2>
+        </div>
+        <div class="columns is-multiline mb-6">
+            {{range .Checklists}}
+            <div class="column is-12-mobile is-6-tablet is-4-desktop">
+                <a href="/lists?id={{.id}}" class="card h-100 is-clickable"
+                    style="display: block; color: inherit; text-decoration: none;">
+                    <div class="card-content p-4">
+                        <p class="has-text-weight-bold mb-2">{{.title}}</p>
+                        <p class="is-size-7 has-text-grey">Created: {{.created_at}}</p>
+                        {{if .tags}}
+                        <div class="tags mt-1">
+                            {{range .tags}}
+                            <span class="tag is-primary is-light is-small" style="font-size: 0.6rem;">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                </a>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        {{if not (or .Bookmarks .Notes .Drawings .RatedLists .Checklists)}}
+        <div class="has-text-centered py-6">
+            <span class="icon is-large has-text-grey-light mb-4">
+                <i class="fas fa-search-minus fa-3x"></i>
+            </span>
+            <p class="is-size-5 has-text-grey">No matches found for your query.</p>
+        </div>
+        {{end}}
+    </div>
+</div>

@@ -1,0 +1,179 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Checklists - InfoKeep{{end}}
+
+{{define "content"}}
+<!-- Hidden element to pass Go data to JS securely -->
+<div id="config-data" data-active-id="{{.ActiveID}}" style="display: none;"></div>
+
+<div class="columns">
+    <!-- Sidebar -->
+    <div class="column is-3">
+        <div class="box">
+            <div class="level mb-4">
+                <div class="level-left">
+                    <h3 class="subtitle is-5 mb-0">Checklists</h3>
+                </div>
+                <div class="level-right">
+                    <button class="button is-small is-light"
+                        onclick="document.getElementById('add-list-modal').classList.add('is-active')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <aside class="menu">
+                <ul class="menu-list" id="main-search-target" hx-get="/lists{{if .ActiveTag}}?tag={{.ActiveTag}}{{end}}"
+                    hx-trigger="load" hx-target="#main-search-target">
+                    <li>
+                        <p class="has-text-centered"><i class="fas fa-spinner fa-pulse"></i></p>
+                    </li>
+                </ul>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="column is-9">
+        <div id="items-container" class="box" style="min-height: 400px;">
+            <div class="has-text-centered has-text-grey py-6">
+                <i class="fas fa-check-double fa-3x mb-4"></i>
+                <p>Select a checklist from the sidebar or create a new one.</p>
+            </div>
+        </div>
+
+        <div id="add-item-form-container" class="box" style="display: none;">
+            <h4 class="title is-5">Add Task</h4>
+            <form id="add-item-form" hx-post="" hx-target="#items-container" hx-on::after-request="this.reset()">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <input class="input" type="text" name="content" placeholder="What needs to be done?" required>
+                    </div>
+                    <div class="control">
+                        <button type="submit" class="button is-info">Add Task</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-list-modal">
+    <div class="modal-background" onclick="document.getElementById('add-list-modal').classList.remove('is-active')">
+    </div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">New Checklist</p>
+            <button class="delete" aria-label="close"
+                onclick="document.getElementById('add-list-modal').classList.remove('is-active')"></button>
+        </header>
+        <section class="modal-card-body">
+            <form hx-post="/lists" hx-target="#main-search-target"
+                hx-on::after-request="document.getElementById('add-list-modal').classList.remove('is-active'); this.reset(); document.getElementById('list-tags-container')._tagInput.setTags([])">
+                <div class="field">
+                    <label class="label">List Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="title" placeholder="Groceries, Work, etc." required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Tags</label>
+                    <div class="control">
+                        <div class="tag-input-container" id="list-tags-container">
+                            <div class="tag-chips"></div>
+                            <input type="text" class="tag-entry" placeholder="groceries, shopping..."
+                                id="list-tags-input-entry">
+                            <input type="hidden" name="tags" id="list-tags-input">
+                            <div class="tag-suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button"
+                        onclick="document.getElementById('add-list-modal').classList.remove('is-active')">Cancel</button>
+                    <button type="submit" class="button is-info">Create List</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<!-- Modal for Editing Item -->
+<div class="modal" id="edit-item-modal">
+    <div class="modal-background" onclick="closeEditItemModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Task</p>
+            <button class="delete" aria-label="close" onclick="closeEditItemModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="edit-item-form" hx-post="" hx-target="#items-container"
+                hx-on::after-request="closeEditItemModal()">
+                <input type="hidden" name="list_id" id="edit-item-list-id">
+                <div class="field">
+                    <label class="label">Task Content</label>
+                    <div class="control">
+                        <input class="input" type="text" name="content" id="edit-item-content-input" required>
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button" onclick="closeEditItemModal()">Cancel</button>
+                    <button type="submit" class="button is-info">Save Changes</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script>
+    const configEl = document.getElementById('config-data');
+    let currentListID = configEl ? configEl.getAttribute('data-active-id') || null : null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (currentListID) {
+            // Wait for list-nav to be loaded by HTMX, then trigger the click
+            const checkNav = setInterval(() => {
+                const link = document.querySelector(`[hx-get="/lists/${currentListID}/items"]`);
+                if (link) {
+                    clearInterval(checkNav);
+                    link.click();
+                }
+            }, 100);
+            // Safety timeout
+            setTimeout(() => clearInterval(checkNav), 3000);
+        }
+    });
+
+    document.addEventListener('htmx:afterOnLoad', function (evt) {
+        if (evt.detail.target.id === 'items-container' && evt.detail.xhr.responseURL.includes('/items')) {
+            const listID = evt.detail.xhr.responseURL.split('/')[4];
+            currentListID = listID;
+            document.getElementById('add-item-form-container').style.display = 'block';
+            document.getElementById('add-item-form').setAttribute('hx-post', '/lists/' + listID + '/items');
+            htmx.process(document.getElementById('add-item-form'));
+        }
+    });
+
+    function editListItem(id, event) {
+        if (event) event.preventDefault(); // Stop checkbox from toggling
+
+        fetch(`/list-items/${id}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(item => {
+                document.getElementById('edit-item-list-id').value = currentListID;
+                document.getElementById('edit-item-content-input').value = item.content;
+
+                const form = document.getElementById('edit-item-form');
+                form.setAttribute('hx-post', `/list-items/${id}`);
+                document.getElementById('edit-item-modal').classList.add('is-active');
+                htmx.process(form);
+            });
+    }
+
+    function closeEditItemModal() {
+        document.getElementById('edit-item-modal').classList.remove('is-active');
+    }
+</script>
+{{end}}

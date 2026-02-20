@@ -1,0 +1,39 @@
+{{range .}}
+<div class="column is-3">
+    <div class="card h-100">
+        <div class="card-image">
+            <figure class="image is-4by3">
+                <img src="{{.file_path}}" alt="{{.title}}" style="object-fit: cover;">
+            </figure>
+        </div>
+        <div class="card-content p-3">
+            <div class="is-flex is-justify-content-space-between is-align-items-center">
+                <div style="overflow: hidden;">
+                    <p class="is-size-7 has-text-weight-bold has-text-grey-darker mb-1"
+                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{.title}}">
+                        {{.title}}
+                    </p>
+                    {{if .tags}}
+                    <div class="tags">
+                        {{range .tags}}
+                        <span class="tag tag-standard is-small" style="font-size: 0.6rem; height: 1.2em;">{{.}}</span>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+                <div class="card-actions">
+                    <button class="button is-small is-white has-text-danger p-1" style="height: auto;"
+                        hx-delete="/items/{{.id}}" hx-target="closest .column" hx-confirm="Delete this image?"
+                        title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{else}}
+<div class="column is-12 has-text-centered py-6">
+    <p class="has-text-grey">Your gallery is empty. Upload some images!</p>
+</div>
+{{end}}

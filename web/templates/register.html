@@ -1,0 +1,79 @@
+{{define "title"}}Register - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="columns is-centered mt-6">
+    <div class="column is-4-desktop is-6-tablet">
+        <div class="box">
+            <div class="has-text-centered mb-5">
+                <i class="fas fa-user-plus is-size-1 has-text-success"></i>
+                <h1 class="title is-4 mt-2">Create Account</h1>
+                <p class="subtitle is-6">Join InfoKeep today</p>
+            </div>
+
+            {{if .Error}}
+            <div class="notification is-danger is-light">
+                {{if eq .Error "exists"}}
+                Username already exists.
+                {{else if eq .Error "empty"}}
+                Please fill in all fields.
+                {{else}}
+                An error occurred. Please try again.
+                {{end}}
+            </div>
+            {{end}}
+
+            <form action="/register" method="POST">
+                <div class="field">
+                    <label class="label">Username</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" name="username" placeholder="Choose a username" required
+                            autofocus>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Password</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" name="password" placeholder="Choose a secure password"
+                            required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field mt-5">
+                    <button class="button is-success is-fullwidth" type="submit">
+                        Register
+                    </button>
+                </div>
+            </form>
+
+            <hr>
+
+            <div class="has-text-centered">
+                <p>Already have an account? <a href="/login" class="has-text-link">Log in here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchContainer = document.querySelector('.main-content .container.mb-6');
+        if (searchContainer) searchContainer.style.display = 'none';
+
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.style.display = 'none';
+
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.style.marginLeft = '0';
+
+        const mobileHeader = document.querySelector('.mobile-header');
+        if (mobileHeader) mobileHeader.style.display = 'none';
+    });
+</script>
+{{end}}
