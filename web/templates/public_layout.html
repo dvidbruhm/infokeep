@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}InfoKeep - Shared{{end}}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            background-color: var(--bulma-background);
+            color: var(--bulma-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .public-content {
+            flex-grow: 1;
+            padding: 3rem 1.5rem;
+        }
+
+        .public-card {
+            background-color: var(--bulma-box-background-color);
+            border-radius: 12px;
+            box-shadow: var(--bulma-box-shadow);
+            padding: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            color: var(--bulma-text);
+        }
+
+        @media screen and (max-width: 768px) {
+            .public-card {
+                padding: 1.5rem;
+            }
+
+            .public-content {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        .footer {
+            background: transparent;
+            padding: 2rem 1.5rem;
+        }
+
+        .brand-link {
+            font-weight: bold;
+            color: var(--bulma-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .content pre {
+            background-color: var(--bulma-background);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar shadow-sm py-2"
+        style="background-color: var(--bulma-scheme-main-bis); border-bottom: 1px solid var(--bulma-border-light);">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item brand-link" href="/">
+                    <img src="/static/favicon.svg" alt="InfoKeep" style="max-height: 28px;">
+                    <span>InfoKeep</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="public-content">
+        <div class="container">
+            <div class="public-card">
+                {{template "content" .}}
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer has-text-centered">
+        <div class="container">
+            <p class="is-size-7 has-text-grey">
+                Shared via <a href="/" style="color: var(--bulma-text-strong);"><strong>InfoKeep</strong></a> - Your
+                personal
+                information manager.
+            </p>
+        </div>
+    </footer>
+</body>
+
+</html>

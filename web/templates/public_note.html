@@ -1,0 +1,22 @@
+{{define "title"}}{{.Note.title}} - InfoKeep Shared Note{{end}}
+{{define "content"}}
+<div class="content">
+    <h1 class="title is-2 mb-2">{{.Note.title}}</h1>
+    {{if .Note.tags}}
+    <div class="tags mb-4">
+        {{range .Note.tags}}
+        <span class="tag is-info is-light is-small">{{.}}</span>
+        {{end}}
+    </div>
+    {{end}}
+    <hr class="mt-0">
+
+    <div class="is-size-5" style="white-space: pre-wrap; line-height: 1.7;">{{.Note.content}}</div>
+
+    <div class="mt-6 pt-5" style="border-top: 1px solid var(--bulma-border-light);">
+        <p class="is-size-7 has-text-grey">
+            <i class="fas fa-clock mr-1"></i> Added to InfoKeep on {{.Note.created_at}}
+        </p>
+    </div>
+</div>
+{{end}}

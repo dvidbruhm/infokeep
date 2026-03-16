@@ -1,0 +1,329 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Reminders - InfoKeep{{end}}
+
+{{define "content"}}
+<div class="level mb-4">
+    <div class="level-left">
+        <h2 class="title is-4 mb-0">Reminders</h2>
+    </div>
+    <div class="level-right">
+        <button class="button is-info"
+            onclick="document.getElementById('add-reminder-modal').classList.add('is-active')">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>New Reminder</span>
+        </button>
+    </div>
+</div>
+
+<!-- Push Notification Permission Banner -->
+<div id="push-permission-banner" class="notification is-warning is-light" style="display: none;">
+    <button class="delete" onclick="this.parentElement.style.display='none'"></button>
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
+        <div>
+            <strong>Enable Desktop/Mobile Notifications</strong><br>
+            To receive push reminders, you need to allow notifications for this app.
+        </div>
+        <button class="button is-warning" onclick="requestPushPermission()">Enable</button>
+    </div>
+</div>
+
+<!-- Push Notification Error Banner -->
+<div id="push-error-banner" class="notification is-danger is-light" style="display: none;">
+    <button class="delete" onclick="this.parentElement.style.display='none'"></button>
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
+        <div>
+            <strong>Push Notifications Unavailable</strong><br>
+            <span id="push-error-text">Your browser does not support push notifications, or they are blocked.</span>
+        </div>
+    </div>
+</div>
+
+<!-- Reminders List -->
+{{if .Reminders}}
+<div class="columns is-multiline">
+    {{range .Reminders}}
+    <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+        <div class="card h-100 is-flex is-flex-direction-column">
+            <header class="card-header has-background-light">
+                <p class="card-header-title is-size-5">
+                    <span class="icon mr-2 has-text-info"><i class="fas fa-bell"></i></span>
+                    {{.Name}}
+                </p>
+                <div class="card-header-icon">
+                    <span class="tag is-info is-light">{{.Frequency}}</span>
+                </div>
+            </header>
+            <div class="card-content is-flex-grow-1">
+                <div class="content mb-0">
+                    <p class="mb-2"><strong>Time:</strong> {{.TimeOfDay}}</p>
+                    <p class="mb-2"><strong>Start:</strong> {{.StartDate}}</p>
+                    {{if and .EndDate.Valid .EndDate.String}}
+                    <p class="mb-2"><strong>End:</strong> {{.EndDate.String}}</p>
+                    {{end}}
+                    <p class="mb-2">
+                        <strong>Type:</strong>
+                        {{if eq .NotificationType "notification_only"}}
+                        <span class="icon-text"><span class="icon"><i
+                                    class="fas fa-mobile-alt"></i></span><span>Push</span></span>
+                        {{else if eq .NotificationType "email"}}
+                        <span class="icon-text"><span class="icon"><i
+                                    class="fas fa-envelope"></i></span><span>Email</span></span>
+                        {{else}}
+                        <span class="icon-text"><span class="icon"><i class="fas fa-mobile-alt"></i></span> <span
+                                class="icon"><i class="fas fa-envelope"></i></span> <span>Push & Email</span></span>
+                        {{end}}
+                    </p>
+                    {{if and (ne .NotificationType "notification_only") .Emails.Valid .Emails.String}}
+                    <p class="is-size-7 has-text-grey mt-2"><i class="fas fa-reply mr-1"></i> {{.Emails.String}}</p>
+                    {{end}}
+                </div>
+            </div>
+            <footer class="card-footer">
+                <a href="#" class="card-footer-item has-text-danger" hx-delete="/reminders/{{.ID}}"
+                    hx-confirm="Are you sure you want to delete this reminder?" hx-target="closest .column"
+                    hx-swap="outerHTML">
+                    <span class="icon is-small mr-1"><i class="fas fa-trash"></i></span> Delete
+                </a>
+            </footer>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{else}}
+<div class="box has-text-centered py-6">
+    <span class="icon is-large has-text-grey-light mb-3"><i class="fas fa-calendar-check fa-3x"></i></span>
+    <p class="is-size-5 has-text-grey">No active reminders.</p>
+    <p class="has-text-grey is-size-6 mt-2">Create a reminder to get notified automatically.</p>
+</div>
+{{end}}
+
+<!-- Add Reminder Modal -->
+<div class="modal" id="add-reminder-modal">
+    <div class="modal-background" onclick="document.getElementById('add-reminder-modal').classList.remove('is-active')">
+    </div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Create Reminder</p>
+            <button class="delete" aria-label="close"
+                onclick="document.getElementById('add-reminder-modal').classList.remove('is-active')"></button>
+        </header>
+        <section class="modal-card-body">
+            <form action="/reminders" method="POST">
+                <div class="field">
+                    <label class="label">Reminder Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="name"
+                            placeholder="E.g., Take medication, Renew passport..." required>
+                    </div>
+                </div>
+
+                <div class="columns">
+                    <div class="column is-half">
+                        <div class="field">
+                            <label class="label">Frequency</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select name="frequency" id="freq-select" onchange="toggleEndDate(this.value)">
+                                        <option value="Once">Once</option>
+                                        <option value="Daily">Daily</option>
+                                        <option value="Weekly">Weekly</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-half">
+                        <div class="field">
+                            <label class="label">Time of Day</label>
+                            <div class="control">
+                                <input class="input" type="time" name="time_of_day" id="time-of-day-input" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="columns">
+                    <div class="column is-half">
+                        <div class="field">
+                            <label class="label">Start Date</label>
+                            <div class="control">
+                                <!-- Automatically default to today -->
+                                <input class="input" type="date" name="start_date" id="start-date-input" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-half" id="end-date-field" style="display: none;">
+                        <div class="field">
+                            <label class="label">End Date (Optional)</label>
+                            <div class="control">
+                                <input class="input" type="date" name="end_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Notification Type</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select name="notification_type" id="type-select" onchange="toggleEmailField(this.value)">
+                                <option value="notification_only">Push Notification Only</option>
+                                <option value="email">Email Only</option>
+                                <option value="both">Push Notification + Email</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field" id="emails-field" style="display: none;">
+                    <label class="label">Email Addresses (Comma separated or ENTER)</label>
+                    <div class="control">
+                        <!-- We use Tagify styling for emails just like the actual tags -->
+                        <input class="input" name="emails" id="email-tags" placeholder="user@example.com">
+                    </div>
+                </div>
+
+                <div class="mt-5 is-flex is-justify-content-flex-end" style="gap: 0.5rem;">
+                    <button type="button" class="button"
+                        onclick="document.getElementById('add-reminder-modal').classList.remove('is-active')">Cancel</button>
+                    <button type="submit" class="button is-info">Save Reminder</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+
+<script>
+    const VAPID_PUBLIC_KEY = "{{.VapidPublicKey}}";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Set default start date to today (using local time, not UTC)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        document.getElementById('start-date-input').value = `${year}-${month}-${day}`;
+
+        // Set default time of day to current local time
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('time-of-day-input').value = `${hours}:${minutes}`;
+
+        // Initialize Tagify for the emails input so they work as chips
+        const emailInput = document.getElementById('email-tags');
+        if (emailInput) {
+            new Tagify(emailInput, {
+                pattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/ // Basic email validation
+            });
+        }
+
+        // Check Push Notification Permission Request Banner
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+            document.getElementById('push-error-banner').style.display = 'block';
+            document.getElementById('push-error-text').innerText = "Push notifications are not supported by this browser. This usually happens if you are using HTTP instead of localhost/HTTPS.";
+        } else {
+            if (Notification.permission === 'default') {
+                document.getElementById('push-permission-banner').style.display = 'block';
+            } else if (Notification.permission === 'granted') {
+                // Ensure subscription exists if granted
+                subscribeUserToPush();
+            } else if (Notification.permission === 'denied') {
+                document.getElementById('push-error-banner').style.display = 'block';
+                document.getElementById('push-error-text').innerText = "You have explicitly blocked push notifications in your browser settings. Please allow them in your URL bar.";
+            }
+        }
+    });
+
+    function toggleEndDate(val) {
+        const endDateField = document.getElementById('end-date-field');
+        if (val === 'Once') {
+            endDateField.style.display = 'none';
+        } else {
+            endDateField.style.display = 'block';
+        }
+    }
+
+    function toggleEmailField(val) {
+        const emailField = document.getElementById('emails-field');
+        if (val === 'email' || val === 'both') {
+            emailField.style.display = 'block';
+        } else {
+            emailField.style.display = 'none';
+        }
+    }
+
+    // Web Push Logic
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    async function requestPushPermission() {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            document.getElementById('push-permission-banner').style.display = 'none';
+            subscribeUserToPush();
+        } else {
+            alert("Notification permission denied. You will not receive push reminders.");
+            document.getElementById('push-permission-banner').style.display = 'none';
+        }
+    }
+
+    async function subscribeUserToPush() {
+        if (!VAPID_PUBLIC_KEY) {
+            console.error("VAPID Key not found, skipping subscription.");
+            return;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.register('/sw.js?v=2');
+            await navigator.serviceWorker.ready;
+
+            // Clear any existing subscription to ensure we are using the current VAPID keys
+            // (fixes the issue where the browser holds onto a subscription tied to old ephemeral keys)
+            const existingSub = await registration.pushManager.getSubscription();
+            if (existingSub) {
+                await existingSub.unsubscribe();
+                console.log('Unsubscribed old push token.');
+            }
+
+            const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: applicationServerKey
+            });
+
+            sendSubscriptionToServer(subscription);
+            console.log('Push notification subscribed.');
+        } catch (err) {
+            console.error('Failed to subscribe the user: ', err);
+        }
+    }
+
+    function sendSubscriptionToServer(subscription) {
+        fetch('/api/push/subscribe', {
+            method: 'POST',
+            body: JSON.stringify(subscription),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+</script>
+{{end}}

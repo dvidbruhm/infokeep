@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{block "title" .}}InfoKeep{{end}}</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#312E81">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/static/css/tags.css">
@@ -131,6 +136,112 @@
             --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
             --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
             --input-bg: #26233a;
+        }
+
+        /* --- New Themes --- */
+
+        [data-theme="midnight-ocean"] {
+            --app-bg: #0d1b2a;
+            --sidebar-bg: #1b2838;
+            --card-bg: #1b2838;
+            --text-main: #c9d6df;
+            --text-strong: #e8f1f8;
+            --text-muted: #6b8299;
+            --border-color: #2a3f54;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            --card-hover-shadow: 0 10px 20px rgba(0, 100, 200, 0.15);
+            --input-bg: #172533;
+        }
+
+        [data-theme="monokai"] {
+            --app-bg: #272822;
+            --sidebar-bg: #1e1f1c;
+            --card-bg: #1e1f1c;
+            --text-main: #f8f8f2;
+            --text-strong: #ffffff;
+            --text-muted: #75715e;
+            --border-color: #3e3d32;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+            --input-bg: #3e3d32;
+        }
+
+        [data-theme="tokyo-night"] {
+            --app-bg: #1a1b26;
+            --sidebar-bg: #16161e;
+            --card-bg: #16161e;
+            --text-main: #a9b1d6;
+            --text-strong: #c0caf5;
+            --text-muted: #565f89;
+            --border-color: #292e42;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+            --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            --input-bg: #292e42;
+        }
+
+        [data-theme="one-dark"] {
+            --app-bg: #282c34;
+            --sidebar-bg: #21252b;
+            --card-bg: #21252b;
+            --text-main: #abb2bf;
+            --text-strong: #e5e9f0;
+            --text-muted: #5c6370;
+            --border-color: #3e4451;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+            --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            --input-bg: #3e4451;
+        }
+
+        [data-theme="everforest"] {
+            --app-bg: #2d353b;
+            --sidebar-bg: #232a2e;
+            --card-bg: #232a2e;
+            --text-main: #d3c6aa;
+            --text-strong: #e5dfc5;
+            --text-muted: #859289;
+            --border-color: #404d44;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+            --input-bg: #343f44;
+        }
+
+        [data-theme="kanagawa"] {
+            --app-bg: #1f1f28;
+            --sidebar-bg: #16161d;
+            --card-bg: #16161d;
+            --text-main: #dcd7ba;
+            --text-strong: #fffaf3;
+            --text-muted: #727169;
+            --border-color: #2a2a37;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+            --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            --input-bg: #2a2a37;
+        }
+
+        [data-theme="sunset-glow"] {
+            --app-bg: #1a1423;
+            --sidebar-bg: #231c2e;
+            --card-bg: #231c2e;
+            --text-main: #e8d5c4;
+            --text-strong: #ffeedd;
+            --text-muted: #9a7e8f;
+            --border-color: #3d2e4a;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            --card-hover-shadow: 0 10px 20px rgba(200, 100, 50, 0.15);
+            --input-bg: #2d2238;
+        }
+
+        [data-theme="arctic"] {
+            --app-bg: #f0f4f8;
+            --sidebar-bg: #e2ecf4;
+            --card-bg: #e2ecf4;
+            --text-main: #435261;
+            --text-strong: #1e3a5f;
+            --text-muted: #7d93a8;
+            --border-color: #c5d5e4;
+            --card-shadow: 0 2px 4px rgba(30, 58, 95, 0.08);
+            --card-hover-shadow: 0 8px 16px rgba(30, 58, 95, 0.15);
+            --input-bg: #f0f4f8;
         }
 
         body {
@@ -296,6 +407,7 @@
             border-color: var(--border-color) !important;
         }
 
+        .input::placeholder,
         .textarea::placeholder {
             color: var(--text-muted) !important;
         }
@@ -304,35 +416,165 @@
             color: var(--text-main) !important;
         }
 
-        /* Override Bulma Utility Classes globally when theme is active */
+        /* Notification overrides for all themes */
+        .notification {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        .notification.is-success.is-light {
+            background-color: var(--card-bg) !important;
+            color: #48c78e !important;
+            border: 1px solid #48c78e40;
+        }
+
+        .notification.is-warning.is-light {
+            background-color: var(--card-bg) !important;
+            color: #ffe08a !important;
+            border: 1px solid #ffe08a40;
+        }
+
+        .notification.is-danger.is-light {
+            background-color: var(--card-bg) !important;
+            color: #f14668 !important;
+            border: 1px solid #f1466840;
+        }
+
+        .notification.is-info.is-light {
+            background-color: var(--card-bg) !important;
+            color: #3e8ed0 !important;
+            border: 1px solid #3e8ed040;
+        }
+
+        /* On light theme, keep Bulma defaults for notifications */
+        [data-theme="light"] .notification.is-success.is-light {
+            background-color: #effaf5 !important;
+            color: #257953 !important;
+            border: none;
+        }
+
+        [data-theme="light"] .notification.is-warning.is-light {
+            background-color: #fffaeb !important;
+            color: #946c00 !important;
+            border: none;
+        }
+
+        [data-theme="light"] .notification.is-danger.is-light {
+            background-color: #feecf0 !important;
+            color: #cc0f35 !important;
+            border: none;
+        }
+
+        [data-theme="light"] .notification.is-info.is-light {
+            background-color: #eff5fb !important;
+            color: #296fa8 !important;
+            border: none;
+        }
+
+        /* File input theming */
+        .file-cta {
+            background-color: var(--input-bg) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .file-name {
+            background-color: var(--input-bg) !important;
+            color: var(--text-muted) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Help text */
+        .help {
+            color: var(--text-muted);
+        }
+
+        /* Dropdown theming */
+        .dropdown-content {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            box-shadow: var(--card-shadow) !important;
+        }
+
+        .dropdown-item {
+            color: var(--text-main) !important;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--input-bg) !important;
+        }
+
+        /* Pagination theming */
+        .pagination-link,
+        .pagination-previous,
+        .pagination-next {
+            background-color: var(--card-bg) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Progress bar theming */
+        .progress {
+            background-color: var(--input-bg) !important;
+        }
+
+        /* hr theming */
+        .content hr {
+            background-color: var(--border-color) !important;
+        }
+
+        /* Delete (X) button stays visible on all themes */
+        .notification .delete {
+            background-color: rgba(10, 10, 10, 0.2);
+        }
+
+        /* Override Bulma Utility Classes globally for all non-light themes */
         [data-theme="dark"] .has-background-light,
         [data-theme="sepia"] .has-background-light,
+        [data-theme="dracula"] .has-background-light,
+        [data-theme="catppuccin"] .has-background-light,
+        [data-theme="synthwave"] .has-background-light,
+        [data-theme="nord"] .has-background-light,
+        [data-theme="gruvbox"] .has-background-light,
+        [data-theme="rose-pine"] .has-background-light,
         [data-theme="dark"] .has-background-white-ter,
-        [data-theme="sepia"] .has-background-white-ter {
+        [data-theme="sepia"] .has-background-white-ter,
+        [data-theme="dracula"] .has-background-white-ter,
+        [data-theme="catppuccin"] .has-background-white-ter,
+        [data-theme="synthwave"] .has-background-white-ter,
+        [data-theme="nord"] .has-background-white-ter,
+        [data-theme="gruvbox"] .has-background-white-ter,
+        [data-theme="rose-pine"] .has-background-white-ter {
             background-color: var(--app-bg) !important;
         }
 
         [data-theme="dark"] .has-background-white,
-        [data-theme="sepia"] .has-background-white {
+        [data-theme="sepia"] .has-background-white,
+        [data-theme="dracula"] .has-background-white,
+        [data-theme="catppuccin"] .has-background-white,
+        [data-theme="synthwave"] .has-background-white,
+        [data-theme="nord"] .has-background-white,
+        [data-theme="gruvbox"] .has-background-white,
+        [data-theme="rose-pine"] .has-background-white {
             background-color: var(--card-bg) !important;
         }
 
         /* Fix buttons and tags that are hardcoded as is-white or is-light */
-        /* Fix buttons and tags that are hardcoded as is-white or is-light */
         [data-theme="dark"] .button.is-white,
-        [data-theme="sepia"] .button.is-white,
         [data-theme="dark"] .button.is-light,
-        [data-theme="sepia"] .button.is-light,
         [data-theme="dark"] .tag.is-light,
-        [data-theme="sepia"] .tag.is-light {
-            background-color: rgba(255, 255, 255, 0.1) !important;
-            border-color: var(--border-color) !important;
-        }
-
         [data-theme="sepia"] .button.is-white,
         [data-theme="sepia"] .button.is-light,
-        [data-theme="sepia"] .tag.is-light {
+        [data-theme="sepia"] .tag.is-light,
+        [data-theme="dracula"] .button.is-white,
+        [data-theme="dracula"] .button.is-light,
+        [data-theme="dracula"] .tag.is-light,
+        [data-theme="catppuccin"] .button.is-white,
+        [data-theme="catppuccin"] .button.is-light,
+        [data-theme="catppuccin"] .tag.is-light {
             background-color: rgba(255, 255, 255, 0.1) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
         }
 
         /* Semantic colors for tags in themes */
@@ -656,6 +898,359 @@
             background-color: rgba(255, 255, 255, 0.05) !important;
         }
 
+        /* Midnight Ocean Overrides */
+        [data-theme="midnight-ocean"] .menu-list a.is-active {
+            background-color: #2a3f54;
+            color: #64b5f6 !important;
+        }
+
+        [data-theme="midnight-ocean"] .is-link,
+        [data-theme="midnight-ocean"] .has-text-link {
+            color: #4fc3f7 !important;
+        }
+
+        [data-theme="midnight-ocean"] .button.is-link {
+            background-color: #4fc3f7 !important;
+            color: #0d1b2a !important;
+        }
+
+        [data-theme="midnight-ocean"] .tag.is-info,
+        [data-theme="midnight-ocean"] .has-text-info {
+            color: #4fc3f7 !important;
+        }
+
+        [data-theme="midnight-ocean"] .tag.is-success,
+        [data-theme="midnight-ocean"] .has-text-success {
+            color: #66bb6a !important;
+        }
+
+        [data-theme="midnight-ocean"] .tag.is-warning,
+        [data-theme="midnight-ocean"] .has-text-warning {
+            color: #ffca28 !important;
+        }
+
+        [data-theme="midnight-ocean"] .tag.is-danger,
+        [data-theme="midnight-ocean"] .has-text-danger {
+            color: #ef5350 !important;
+        }
+
+        [data-theme="midnight-ocean"] .tag.is-info,
+        [data-theme="midnight-ocean"] .tag.is-success,
+        [data-theme="midnight-ocean"] .tag.is-warning,
+        [data-theme="midnight-ocean"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        [data-theme="midnight-ocean"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* Monokai Overrides */
+        [data-theme="monokai"] .menu-list a.is-active {
+            background-color: #3e3d32;
+            color: #a6e22e !important;
+        }
+
+        [data-theme="monokai"] .is-link,
+        [data-theme="monokai"] .has-text-link {
+            color: #66d9ef !important;
+        }
+
+        [data-theme="monokai"] .button.is-link {
+            background-color: #66d9ef !important;
+            color: #272822 !important;
+        }
+
+        [data-theme="monokai"] .tag.is-info,
+        [data-theme="monokai"] .has-text-info {
+            color: #66d9ef !important;
+        }
+
+        [data-theme="monokai"] .tag.is-success,
+        [data-theme="monokai"] .has-text-success {
+            color: #a6e22e !important;
+        }
+
+        [data-theme="monokai"] .tag.is-warning,
+        [data-theme="monokai"] .has-text-warning {
+            color: #e6db74 !important;
+        }
+
+        [data-theme="monokai"] .tag.is-danger,
+        [data-theme="monokai"] .has-text-danger {
+            color: #f92672 !important;
+        }
+
+        [data-theme="monokai"] .tag.is-info,
+        [data-theme="monokai"] .tag.is-success,
+        [data-theme="monokai"] .tag.is-warning,
+        [data-theme="monokai"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        [data-theme="monokai"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Tokyo Night Overrides */
+        [data-theme="tokyo-night"] .menu-list a.is-active {
+            background-color: #292e42;
+            color: #7aa2f7 !important;
+        }
+
+        [data-theme="tokyo-night"] .is-link,
+        [data-theme="tokyo-night"] .has-text-link {
+            color: #7aa2f7 !important;
+        }
+
+        [data-theme="tokyo-night"] .button.is-link {
+            background-color: #7aa2f7 !important;
+            color: #1a1b26 !important;
+        }
+
+        [data-theme="tokyo-night"] .tag.is-info,
+        [data-theme="tokyo-night"] .has-text-info {
+            color: #7dcfff !important;
+        }
+
+        [data-theme="tokyo-night"] .tag.is-success,
+        [data-theme="tokyo-night"] .has-text-success {
+            color: #9ece6a !important;
+        }
+
+        [data-theme="tokyo-night"] .tag.is-warning,
+        [data-theme="tokyo-night"] .has-text-warning {
+            color: #e0af68 !important;
+        }
+
+        [data-theme="tokyo-night"] .tag.is-danger,
+        [data-theme="tokyo-night"] .has-text-danger {
+            color: #f7768e !important;
+        }
+
+        [data-theme="tokyo-night"] .tag.is-info,
+        [data-theme="tokyo-night"] .tag.is-success,
+        [data-theme="tokyo-night"] .tag.is-warning,
+        [data-theme="tokyo-night"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-theme="tokyo-night"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* One Dark Overrides */
+        [data-theme="one-dark"] .menu-list a.is-active {
+            background-color: #3e4451;
+            color: #61afef !important;
+        }
+
+        [data-theme="one-dark"] .is-link,
+        [data-theme="one-dark"] .has-text-link {
+            color: #61afef !important;
+        }
+
+        [data-theme="one-dark"] .button.is-link {
+            background-color: #61afef !important;
+            color: #282c34 !important;
+        }
+
+        [data-theme="one-dark"] .tag.is-info,
+        [data-theme="one-dark"] .has-text-info {
+            color: #61afef !important;
+        }
+
+        [data-theme="one-dark"] .tag.is-success,
+        [data-theme="one-dark"] .has-text-success {
+            color: #98c379 !important;
+        }
+
+        [data-theme="one-dark"] .tag.is-warning,
+        [data-theme="one-dark"] .has-text-warning {
+            color: #e5c07b !important;
+        }
+
+        [data-theme="one-dark"] .tag.is-danger,
+        [data-theme="one-dark"] .has-text-danger {
+            color: #e06c75 !important;
+        }
+
+        [data-theme="one-dark"] .tag.is-info,
+        [data-theme="one-dark"] .tag.is-success,
+        [data-theme="one-dark"] .tag.is-warning,
+        [data-theme="one-dark"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-theme="one-dark"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* Everforest Overrides */
+        [data-theme="everforest"] .menu-list a.is-active {
+            background-color: #404d44;
+            color: #a7c080 !important;
+        }
+
+        [data-theme="everforest"] .is-link,
+        [data-theme="everforest"] .has-text-link {
+            color: #7fbbb3 !important;
+        }
+
+        [data-theme="everforest"] .button.is-link {
+            background-color: #7fbbb3 !important;
+            color: #2d353b !important;
+        }
+
+        [data-theme="everforest"] .tag.is-info,
+        [data-theme="everforest"] .has-text-info {
+            color: #7fbbb3 !important;
+        }
+
+        [data-theme="everforest"] .tag.is-success,
+        [data-theme="everforest"] .has-text-success {
+            color: #a7c080 !important;
+        }
+
+        [data-theme="everforest"] .tag.is-warning,
+        [data-theme="everforest"] .has-text-warning {
+            color: #dbbc7f !important;
+        }
+
+        [data-theme="everforest"] .tag.is-danger,
+        [data-theme="everforest"] .has-text-danger {
+            color: #e67e80 !important;
+        }
+
+        [data-theme="everforest"] .tag.is-info,
+        [data-theme="everforest"] .tag.is-success,
+        [data-theme="everforest"] .tag.is-warning,
+        [data-theme="everforest"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-theme="everforest"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* Kanagawa Overrides */
+        [data-theme="kanagawa"] .menu-list a.is-active {
+            background-color: #2a2a37;
+            color: #dca561 !important;
+        }
+
+        [data-theme="kanagawa"] .is-link,
+        [data-theme="kanagawa"] .has-text-link {
+            color: #7e9cd8 !important;
+        }
+
+        [data-theme="kanagawa"] .button.is-link {
+            background-color: #7e9cd8 !important;
+            color: #1f1f28 !important;
+        }
+
+        [data-theme="kanagawa"] .tag.is-info,
+        [data-theme="kanagawa"] .has-text-info {
+            color: #7fb4ca !important;
+        }
+
+        [data-theme="kanagawa"] .tag.is-success,
+        [data-theme="kanagawa"] .has-text-success {
+            color: #98bb6c !important;
+        }
+
+        [data-theme="kanagawa"] .tag.is-warning,
+        [data-theme="kanagawa"] .has-text-warning {
+            color: #dca561 !important;
+        }
+
+        [data-theme="kanagawa"] .tag.is-danger,
+        [data-theme="kanagawa"] .has-text-danger {
+            color: #ff5d62 !important;
+        }
+
+        [data-theme="kanagawa"] .tag.is-info,
+        [data-theme="kanagawa"] .tag.is-success,
+        [data-theme="kanagawa"] .tag.is-warning,
+        [data-theme="kanagawa"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-theme="kanagawa"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* Sunset Glow Overrides */
+        [data-theme="sunset-glow"] .menu-list a.is-active {
+            background-color: #3d2e4a;
+            color: #ff8a65 !important;
+        }
+
+        [data-theme="sunset-glow"] .is-link,
+        [data-theme="sunset-glow"] .has-text-link {
+            color: #ce93d8 !important;
+        }
+
+        [data-theme="sunset-glow"] .button.is-link {
+            background-color: #ce93d8 !important;
+            color: #1a1423 !important;
+        }
+
+        [data-theme="sunset-glow"] .tag.is-info,
+        [data-theme="sunset-glow"] .has-text-info {
+            color: #ce93d8 !important;
+        }
+
+        [data-theme="sunset-glow"] .tag.is-success,
+        [data-theme="sunset-glow"] .has-text-success {
+            color: #81c784 !important;
+        }
+
+        [data-theme="sunset-glow"] .tag.is-warning,
+        [data-theme="sunset-glow"] .has-text-warning {
+            color: #ffb74d !important;
+        }
+
+        [data-theme="sunset-glow"] .tag.is-danger,
+        [data-theme="sunset-glow"] .has-text-danger {
+            color: #ef5350 !important;
+        }
+
+        [data-theme="sunset-glow"] .tag.is-info,
+        [data-theme="sunset-glow"] .tag.is-success,
+        [data-theme="sunset-glow"] .tag.is-warning,
+        [data-theme="sunset-glow"] .tag.is-danger {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        [data-theme="sunset-glow"] .menu-list a:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* Arctic Overrides (light theme) */
+        [data-theme="arctic"] .menu-list a.is-active {
+            background-color: #c5d5e4;
+            color: #1565c0 !important;
+        }
+
+        [data-theme="arctic"] .is-link,
+        [data-theme="arctic"] .has-text-link {
+            color: #1976d2 !important;
+        }
+
+        [data-theme="arctic"] .button.is-link {
+            background-color: #1976d2 !important;
+            color: #f0f4f8 !important;
+        }
+
+        [data-theme="arctic"] .menu-list a {
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="arctic"] .menu-list a:hover {
+            background-color: rgba(0, 0, 0, 0.04) !important;
+        }
+
         /* Common Utility Overrides for New Themes */
         [data-theme="synthwave"] .button.is-white,
         [data-theme="synthwave"] .button.is-light,
@@ -668,8 +1263,30 @@
         [data-theme="gruvbox"] .tag.is-light,
         [data-theme="rose-pine"] .button.is-white,
         [data-theme="rose-pine"] .button.is-light,
-        [data-theme="rose-pine"] .tag.is-light {
+        [data-theme="rose-pine"] .tag.is-light,
+        [data-theme="midnight-ocean"] .button.is-white,
+        [data-theme="midnight-ocean"] .button.is-light,
+        [data-theme="midnight-ocean"] .tag.is-light,
+        [data-theme="monokai"] .button.is-white,
+        [data-theme="monokai"] .button.is-light,
+        [data-theme="monokai"] .tag.is-light,
+        [data-theme="tokyo-night"] .button.is-white,
+        [data-theme="tokyo-night"] .button.is-light,
+        [data-theme="tokyo-night"] .tag.is-light,
+        [data-theme="one-dark"] .button.is-white,
+        [data-theme="one-dark"] .button.is-light,
+        [data-theme="one-dark"] .tag.is-light,
+        [data-theme="everforest"] .button.is-white,
+        [data-theme="everforest"] .button.is-light,
+        [data-theme="everforest"] .tag.is-light,
+        [data-theme="kanagawa"] .button.is-white,
+        [data-theme="kanagawa"] .button.is-light,
+        [data-theme="kanagawa"] .tag.is-light,
+        [data-theme="sunset-glow"] .button.is-white,
+        [data-theme="sunset-glow"] .button.is-light,
+        [data-theme="sunset-glow"] .tag.is-light {
             background-color: rgba(255, 255, 255, 0.1) !important;
+            color: var(--text-main) !important;
             border-color: var(--border-color) !important;
         }
 
@@ -680,7 +1297,21 @@
         [data-theme="gruvbox"] .has-background-light,
         [data-theme="gruvbox"] .has-background-white,
         [data-theme="rose-pine"] .has-background-light,
-        [data-theme="rose-pine"] .has-background-white {
+        [data-theme="rose-pine"] .has-background-white,
+        [data-theme="midnight-ocean"] .has-background-light,
+        [data-theme="midnight-ocean"] .has-background-white,
+        [data-theme="monokai"] .has-background-light,
+        [data-theme="monokai"] .has-background-white,
+        [data-theme="tokyo-night"] .has-background-light,
+        [data-theme="tokyo-night"] .has-background-white,
+        [data-theme="one-dark"] .has-background-light,
+        [data-theme="one-dark"] .has-background-white,
+        [data-theme="everforest"] .has-background-light,
+        [data-theme="everforest"] .has-background-white,
+        [data-theme="kanagawa"] .has-background-light,
+        [data-theme="kanagawa"] .has-background-white,
+        [data-theme="sunset-glow"] .has-background-light,
+        [data-theme="sunset-glow"] .has-background-white {
             background-color: var(--app-bg) !important;
         }
 
@@ -714,6 +1345,21 @@
         .bookmark-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--card-hover-shadow);
+        }
+
+        /* Ensure bookmark thumbnail images fill the figure correctly */
+        .bookmark-card .card-image .image.is-16by9 a {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .bookmark-card .card-image .image.is-16by9 a img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .border-top {
@@ -852,31 +1498,299 @@
             --tag-fg: #e0def4;
         }
 
+        [data-theme="midnight-ocean"] {
+            --tag-bg: #2a3f54;
+            --tag-fg: #c9d6df;
+        }
+
+        [data-theme="monokai"] {
+            --tag-bg: #3e3d32;
+            --tag-fg: #f8f8f2;
+        }
+
+        [data-theme="tokyo-night"] {
+            --tag-bg: #292e42;
+            --tag-fg: #a9b1d6;
+        }
+
+        [data-theme="one-dark"] {
+            --tag-bg: #3e4451;
+            --tag-fg: #abb2bf;
+        }
+
+        [data-theme="everforest"] {
+            --tag-bg: #404d44;
+            --tag-fg: #d3c6aa;
+        }
+
+        [data-theme="kanagawa"] {
+            --tag-bg: #2a2a37;
+            --tag-fg: #dcd7ba;
+        }
+
+        [data-theme="sunset-glow"] {
+            --tag-bg: #3d2e4a;
+            --tag-fg: #e8d5c4;
+        }
+
+        [data-theme="arctic"] {
+            --tag-bg: #c5d5e4;
+            --tag-fg: #435261;
+        }
+
         .tag.tag-standard {
             background-color: var(--tag-bg) !important;
             color: var(--tag-fg) !important;
             border: 1px solid transparent;
         }
+
+        /* ---- List View Mode ---- */
+        #main-search-target.is-list-view {
+            display: flex !important;
+            flex-wrap: wrap !important;
+        }
+
+        /* Individual page card columns (not the dashboard's is-12 wrapper) */
+        #main-search-target.is-list-view>.column:not(.is-12) {
+            width: 33.333% !important;
+            flex: none !important;
+            padding: 0.2rem 0.25rem !important;
+        }
+
+        /* Dashboard outer wrapper stays full-width */
+        #main-search-target.is-list-view>.column.is-12 {
+            width: 100% !important;
+            flex: none !important;
+            padding: 0 !important;
+        }
+
+        #main-search-target.is-list-view .card {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            border-radius: 6px !important;
+            min-height: 0 !important;
+            box-shadow: none !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        #main-search-target.is-list-view .card-image {
+            flex: none !important;
+            width: 56px !important;
+            height: 56px !important;
+            overflow: hidden !important;
+        }
+
+        #main-search-target.is-list-view .card-image figure {
+            width: 56px !important;
+            height: 56px !important;
+            padding: 0 !important;
+        }
+
+        #main-search-target.is-list-view .card-image figure img {
+            width: 56px !important;
+            height: 56px !important;
+            object-fit: cover !important;
+        }
+
+        /* Keep the placeholder icon box small and centered */
+        #main-search-target.is-list-view .card-image figure.has-background-light {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        #main-search-target.is-list-view .card-image figure.has-background-light .icon {
+            font-size: 1rem !important;
+        }
+
+        #main-search-target.is-list-view .card-image figure.has-background-light .icon i {
+            font-size: 1rem !important;
+        }
+
+        #main-search-target.is-list-view .card>a.is-block {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            width: 100% !important;
+        }
+
+        #main-search-target.is-list-view .card-content {
+            flex: 1 !important;
+            padding: 0.4rem 0.75rem !important;
+        }
+
+        #main-search-target.is-list-view .card-header {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            flex: 1 !important;
+            box-shadow: none !important;
+            border-bottom: none !important;
+            padding: 0.4rem 0.75rem !important;
+        }
+
+        #main-search-target.is-list-view .title.is-6 {
+            font-size: 0.875rem !important;
+            margin-bottom: 0 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            max-width: 18vw !important;
+        }
+
+        #main-search-target.is-list-view .card-header-title {
+            padding: 0 !important;
+            font-size: 0.875rem !important;
+            flex: 1 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        #main-search-target.is-list-view .subtitle,
+        #main-search-target.is-list-view .content.is-small,
+        #main-search-target.is-list-view .is-size-7.has-text-grey-darker,
+        #main-search-target.is-list-view .is-size-7.has-text-grey.mb-2 {
+            display: none !important;
+        }
+
+        #main-search-target.is-list-view .tags {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            flex-wrap: nowrap !important;
+            overflow: hidden !important;
+        }
+
+        #main-search-target.is-list-view .border-top {
+            border-top: none !important;
+        }
+
+        /* Dashboard: nested inner column grids */
+        #main-search-target.is-list-view .columns.is-multiline {
+            display: flex !important;
+            flex-wrap: wrap !important;
+        }
+
+        #main-search-target.is-list-view .columns.is-multiline>.column {
+            width: 33.333% !important;
+            flex: none !important;
+            padding: 0.2rem 0.25rem !important;
+        }
+
+        #main-search-target.is-list-view .is-flex.is-justify-content-space-between {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        #main-search-target.is-list-view .card-header-icon {
+            padding: 0 !important;
+        }
+
+        /* View toggle button */
+        .view-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.15rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .view-toggle-btn button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.35rem 0.6rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .view-toggle-btn button.is-active {
+            background: var(--border-color);
+            color: var(--text-strong);
+        }
+
+        /* List view → single column on mobile (must come after desktop rules) */
+        @media screen and (max-width: 768px) {
+
+            #main-search-target.is-list-view>.column:not(.is-12),
+            #main-search-target.is-list-view .columns.is-multiline>.column {
+                width: 100% !important;
+            }
+
+            #main-search-target.is-list-view .title.is-6 {
+                max-width: 55vw !important;
+            }
+        }
     </style>
     <script>
         // Theme Management
+        const _editableVars = ['--app-bg', '--sidebar-bg', '--card-bg', '--text-main', '--text-strong', '--text-muted', '--border-color', '--input-bg'];
+
         function applyTheme(theme) {
+            // Clear any previous custom overrides
+            _editableVars.forEach(v => document.documentElement.style.removeProperty(v));
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
+            // Apply custom overrides for the new theme
+            try {
+                const overrides = JSON.parse(localStorage.getItem('theme-custom-' + theme)) || {};
+                Object.entries(overrides).forEach(([k, v]) => {
+                    document.documentElement.style.setProperty(k, v);
+                });
+            } catch (e) { }
         }
 
         // Initialize theme before content loads to prevent flash
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            try {
+                const overrides = JSON.parse(localStorage.getItem('theme-custom-' + savedTheme)) || {};
+                Object.entries(overrides).forEach(([k, v]) => {
+                    document.documentElement.style.setProperty(k, v);
+                });
+            } catch (e) { }
+        })();
+
+        // View toggle — defined here in <head> so page scripts can call it immediately
+        function initViewToggle(pageKey) {
+            var storageKey = 'view-mode-' + pageKey;
+            var savedMode = localStorage.getItem(storageKey) || 'card';
+            // Apply class immediately (before DOM ready) if list mode
+            // Full init runs on DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', function () {
+                var container = document.getElementById('main-search-target');
+                if (!container) return;
+                var toggleEl = document.getElementById('view-toggle');
+                if (!toggleEl) return;
+                var cardBtn = toggleEl.querySelector('[data-view="card"]');
+                var listBtn = toggleEl.querySelector('[data-view="list"]');
+                function setActive(mode) {
+                    container.classList.toggle('is-list-view', mode === 'list');
+                    cardBtn.classList.toggle('is-active', mode === 'card');
+                    listBtn.classList.toggle('is-active', mode === 'list');
+                    localStorage.setItem(storageKey, mode);
+                }
+                setActive(savedMode);
+                cardBtn.addEventListener('click', function () { setActive('card'); });
+                listBtn.addEventListener('click', function () { setActive('list'); });
+            });
+        }
     </script>
 </head>
 
 <body>
     <div class="mobile-header">
-        <div class="sidebar-brand mb-0" style="font-size: 1.2rem;">
-            <i class="fas fa-box-archive has-text-link"></i>
+        <a href="/" class="sidebar-brand mb-0" style="font-size: 1.2rem; text-decoration: none; color: inherit;">
+            <img src="/static/favicon.svg" alt="InfoKeep"
+                style="width: 28px; height: 28px; vertical-align: middle; margin-right: 0.4rem;">
             <span>InfoKeep</span>
-        </div>
+        </a>
         <button class="button is-white" id="mobile-menu-toggle">
             <i class="fas fa-bars"></i>
         </button>
@@ -884,10 +1798,11 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <aside class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-box-archive has-text-link"></i>
+        <a href="/" class="sidebar-brand" style="text-decoration: none; color: inherit;">
+            <img src="/static/favicon.svg" alt="InfoKeep"
+                style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.4rem;">
             <span>InfoKeep</span>
-        </div>
+        </a>
         <p class="menu-label">Library</p>
         <ul class="menu-list">
             <li><a href="/" id="nav-dashboard"><i class="fas fa-home mr-2"></i> Dashboard</a></li>
@@ -898,11 +1813,11 @@
             <li><a href="/lists" id="nav-checklists"><i class="fas fa-list-check mr-2"></i> Checklists</a></li>
             <li><a href="/media" id="nav-media"><i class="fas fa-image mr-2"></i> Images</a></li>
             <li><a href="/recipes" id="nav-recipes"><i class="fas fa-utensils mr-2"></i> Recipes</a></li>
+            <li><a href="/reminders" id="nav-reminders"><i class="fas fa-bell mr-2"></i> Reminders</a></li>
         </ul>
         <p class="menu-label">Options</p>
         <ul class="menu-list">
             <li><a href="/settings" id="nav-settings"><i class="fas fa-cog mr-2"></i> Settings</a></li>
-            <li><a href="#" class="has-text-link"><i class="fas fa-plus-circle mr-2"></i> New Item</a></li>
             <li>
                 <form action="/logout" method="POST" id="logout-form" style="display:none;"></form>
                 <a href="#" onclick="document.getElementById('logout-form').submit(); return false;"
@@ -994,6 +1909,146 @@
                 sidebar.classList.remove('is-active');
                 overlay.classList.remove('is-active');
             });
+        }
+    </script>
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(function () { });
+        }
+    </script>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-background" onclick="closeShareModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Share Item</p>
+                <button class="delete" aria-label="close" onclick="closeShareModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <div id="share-not-generated">
+                    <p class="mb-4">Generate a unique, public link to share this item with others.</p>
+                    <button class="button is-primary is-fullwidth" id="btn-generate-share"
+                        onclick="generateShareLink()">
+                        <i class="fas fa-link mr-2"></i> Generate Public Link
+                    </button>
+                    <p class="mt-4 is-size-7 has-text-grey">This item is currently private.</p>
+                </div>
+                <div id="share-generated" style="display: none;">
+                    <p class="mb-2 is-size-7 has-text-grey">Public Link:</p>
+                    <div class="field has-addons">
+                        <div class="control is-flex-grow-1">
+                            <input id="share-url-input" class="input" type="text" readonly>
+                        </div>
+                        <div class="control">
+                            <button class="button is-link" onclick="copyShareUrl()" title="Copy Link"
+                                style="height: 100%;">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mt-4 is-size-7 has-text-grey">Anyone with this link can view the item in a read-only mode.
+                    </p>
+                    <hr>
+                    <button class="button is-danger is-light is-fullwidth" onclick="revokeShareLink()">
+                        <i class="fas fa-trash-can mr-2"></i> Revoke Public Link
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        let currentShareItem = { type: null, id: null, hash: null };
+
+        function openShareModal(type, id) {
+            currentShareItem = { type, id, hash: null };
+            document.getElementById('share-modal').classList.add('is-active');
+
+            // Initial UI state
+            document.getElementById('share-not-generated').style.display = 'block';
+            document.getElementById('share-generated').style.display = 'none';
+
+            // Check for existing link immediately when opening
+            checkExistingShare();
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('is-active');
+        }
+
+        async function checkExistingShare() {
+            // The generate API actually handles returning existing links too, 
+            // but for a better UX we can just call it with a slightly different flow or just show a loader.
+            // For simplicity, we just trigger the generate logic which returns existing if found.
+            // But let's just use the POST /share logic as it safely handles both.
+        }
+
+        async function generateShareLink() {
+            const btn = document.getElementById('btn-generate-share');
+            btn.classList.add('is-loading');
+
+            try {
+                const response = await fetch('/api/share', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_type: currentShareItem.type, item_id: currentShareItem.id.toString() })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showGeneratedLink(data.url, data.link_hash);
+                } else {
+                    alert('Failed to generate share link');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred');
+            } finally {
+                btn.classList.remove('is-loading');
+            }
+        }
+
+        function showGeneratedLink(url, hash) {
+            currentShareItem.hash = hash;
+            document.getElementById('share-url-input').value = url;
+            document.getElementById('share-not-generated').style.display = 'none';
+            document.getElementById('share-generated').style.display = 'block';
+        }
+
+        function copyShareUrl() {
+            const input = document.getElementById('share-url-input');
+            input.select();
+            document.execCommand('copy');
+
+            // Feedback
+            const btn = event.currentTarget;
+            const icon = btn.querySelector('i');
+            const oldClass = icon.className;
+            icon.className = 'fas fa-check';
+            setTimeout(() => icon.className = oldClass, 2000);
+        }
+
+        async function revokeShareLink() {
+            if (!confirm('Are you sure you want to revoke this link? The current URL will no longer work.')) return;
+
+            try {
+                const response = await fetch(`/api/share/${currentShareItem.hash}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    document.getElementById('share-not-generated').style.display = 'block';
+                    document.getElementById('share-generated').style.display = 'none';
+                    currentShareItem.hash = null;
+                } else {
+                    alert('Failed to revoke link');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred');
+            }
         }
     </script>
 </body>

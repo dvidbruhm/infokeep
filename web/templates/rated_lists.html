@@ -44,7 +44,9 @@
         <!-- Add Item Form (Float or Modal?) Let's keep it in container -->
         <div id="add-item-form-container" class="box" style="display: none;">
             <h4 class="title is-5">Add to List</h4>
-            <form id="add-item-form" hx-post="" hx-target="#items-container" hx-on::after-request="this.reset()">
+            <form id="add-item-form" hx-post="" hx-target="#items-container"
+                hx-on::after-request="this.reset(); document.getElementById('add-image-preview').style.display='none'"
+                enctype="multipart/form-data">
                 <div class="columns">
                     <div class="column is-8">
                         <div class="field">
@@ -67,6 +69,24 @@
                 <div class="field">
                     <div class="control">
                         <input class="input" type="text" name="note" placeholder="Optional note or review...">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label is-small">Image (optional)</label>
+                    <div class="control">
+                        <input type="file" name="image" id="add-image-input" accept="image/*" style="display:none;"
+                            onchange="previewAddImage(this)">
+                        <button type="button" class="button is-small is-light"
+                            onclick="document.getElementById('add-image-input').click()">
+                            <span class="icon is-small"><i class="fas fa-camera"></i></span>
+                            <span>Capture / Upload Image</span>
+                        </button>
+                        <div id="add-image-preview" style="display:none; margin-top:0.5rem;">
+                            <img id="add-image-preview-img"
+                                style="max-height:80px; border-radius:4px; border:1px solid var(--border-color);">
+                            <button type="button" class="delete is-small"
+                                style="vertical-align:top; margin-left:0.25rem;" onclick="clearAddImage()"></button>
+                        </div>
                     </div>
                 </div>
                 <div class="control">
@@ -128,7 +148,7 @@
         </header>
         <section class="modal-card-body">
             <form id="edit-item-form" hx-post="" hx-target="#items-container"
-                hx-on::after-request="closeEditItemModal()">
+                hx-on::after-request="closeEditItemModal()" enctype="multipart/form-data">
                 <input type="hidden" name="list_id" id="edit-item-list-id">
                 <div class="field">
                     <label class="label">Item Name</label>
@@ -147,6 +167,30 @@
                     <label class="label">Note</label>
                     <div class="control">
                         <input class="input" type="text" name="note" id="edit-item-note-input">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Image</label>
+                    <div class="control">
+                        <div id="edit-image-current" style="display:none; margin-bottom:0.5rem;">
+                            <img id="edit-image-current-img"
+                                style="max-height:120px; border-radius:6px; border:1px solid var(--border-color);">
+                            <button type="button" class="delete is-small"
+                                style="vertical-align:top; margin-left:0.25rem;" onclick="removeEditImage()"
+                                title="Remove image"></button>
+                        </div>
+                        <input type="hidden" name="remove_image" id="edit-remove-image" value="0">
+                        <input type="file" name="image" id="edit-image-input" accept="image/*" style="display:none;"
+                            onchange="previewEditImage(this)">
+                        <button type="button" class="button is-small is-light"
+                            onclick="document.getElementById('edit-image-input').click()">
+                            <span class="icon is-small"><i class="fas fa-camera"></i></span>
+                            <span id="edit-image-btn-text">Capture / Upload Image</span>
+                        </button>
+                        <div id="edit-image-preview" style="display:none; margin-top:0.5rem;">
+                            <img id="edit-image-preview-img"
+                                style="max-height:80px; border-radius:4px; border:1px solid var(--border-color);">
+                        </div>
                     </div>
                 </div>
                 <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
@@ -198,6 +242,20 @@
                 document.getElementById('edit-item-title-input').value = item.title;
                 document.getElementById('edit-item-score-input').value = item.score;
                 document.getElementById('edit-item-note-input').value = item.note || "";
+                document.getElementById('edit-remove-image').value = '0';
+                document.getElementById('edit-image-input').value = '';
+                document.getElementById('edit-image-preview').style.display = 'none';
+
+                // Show existing image if present
+                const currentDiv = document.getElementById('edit-image-current');
+                if (item.image_path) {
+                    document.getElementById('edit-image-current-img').src = item.image_path;
+                    currentDiv.style.display = 'block';
+                    document.getElementById('edit-image-btn-text').textContent = 'Replace Image';
+                } else {
+                    currentDiv.style.display = 'none';
+                    document.getElementById('edit-image-btn-text').textContent = 'Capture / Upload Image';
+                }
 
                 const form = document.getElementById('edit-item-form');
                 form.setAttribute('hx-post', `/rated-list-items/${id}`);
@@ -208,6 +266,40 @@
 
     function closeEditItemModal() {
         document.getElementById('edit-item-modal').classList.remove('is-active');
+    }
+
+    // Image preview helpers
+    function previewAddImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('add-image-preview-img').src = e.target.result;
+                document.getElementById('add-image-preview').style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function clearAddImage() {
+        document.getElementById('add-image-input').value = '';
+        document.getElementById('add-image-preview').style.display = 'none';
+    }
+
+    function previewEditImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('edit-image-preview-img').src = e.target.result;
+                document.getElementById('edit-image-preview').style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeEditImage() {
+        document.getElementById('edit-image-current').style.display = 'none';
+        document.getElementById('edit-remove-image').value = '1';
+        document.getElementById('edit-image-btn-text').textContent = 'Capture / Upload Image';
     }
 </script>
 {{end}}

@@ -20,8 +20,8 @@ FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install necessary runtime libraries for sqlite (usually not needed if dynamically linked correctly on same distro, but good practice to have ca-certificates)
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install necessary runtime libraries and timezone data for TZ environment variable support
+RUN apt-get update && apt-get install -y ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/infokeep .

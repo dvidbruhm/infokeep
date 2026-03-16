@@ -9,6 +9,7 @@ import (
 	"infokeep/internal/database"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
@@ -85,6 +86,31 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 	}
 }
 
+func RenderPublicTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+	tmplPath := filepath.Join("web", "templates", tmpl)
+	layoutPath := filepath.Join("web", "templates", "public_layout.html")
+
+	files := []string{layoutPath, tmplPath}
+	fragments, _ := filepath.Glob(filepath.Join("web", "templates", "fragments", "*.html"))
+	files = append(files, fragments...)
+
+	t, err := template.New(filepath.Base(layoutPath)).Funcs(template.FuncMap{
+		"getTagColor": getTagColor,
+	}).ParseFiles(files...)
+
+	if err != nil {
+		fmt.Printf("RenderPublicTemplate Parse Error: %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = t.ExecuteTemplate(w, "public_layout.html", data)
+	if err != nil {
+		fmt.Printf("RenderPublicTemplate Execute Error: %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func RenderFragment(w http.ResponseWriter, tmpl string, data interface{}) {
 	tmplPath := filepath.Join("web", "templates", "fragments", tmpl)
 	t, err := template.New(filepath.Base(tmplPath)).Funcs(template.FuncMap{
@@ -133,7 +159,17 @@ func fetchThumbnail(targetURL string) string {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	resp, err := client.Get(targetURL)
+
+	req, err := http.NewRequest("GET", targetURL, nil)
+	if err != nil {
+		fmt.Printf("Error creating request for %s: %v\n", targetURL, err)
+		return ""
+	}
+
+	// Add a common User-Agent to avoid being blocked by anti-bot protections
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("Error fetching thumbnail for %s: %v\n", targetURL, err)
 		return ""
@@ -291,10 +327,7 @@ func UpdateBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 	// Return fragment if HTMX
 	if r.Header.Get("HX-Request") != "" {
 		bookmarks, _ := database.GetBookmarks(userID, "")
-		data := map[string]interface{}{
-			"Bookmarks": bookmarks,
-		}
-		RenderFragment(w, "bookmark_list.html", data)
+		RenderFragment(w, "bookmark_list.html", bookmarks)
 		return
 	}
 
@@ -450,16 +483,24 @@ func RatedListItemHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Sscanf(listIDStr, "%d", &listID)
 
 	if r.Method == http.MethodPost {
+		r.ParseMultipartForm(10 << 20) // 10MB max
 		title := r.FormValue("title")
 		scoreStr := r.FormValue("score")
 		var score int
 		fmt.Sscanf(scoreStr, "%d", &score)
 		note := r.FormValue("note")
 
-		err := database.AddRatedListItem(listID, title, score, note)
+		itemID, err := database.AddRatedListItem(listID, title, score, note)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		// Handle optional image upload
+		file, header, fileErr := r.FormFile("image")
+		if fileErr == nil && header.Size > 0 {
+			defer file.Close()
+			saveRatedItemImage(itemID, file, header)
 		}
 
 		items, _ := database.GetRatedListItems(listID)
@@ -491,6 +532,7 @@ func UpdateRatedListItemHandler(w http.ResponseWriter, r *http.Request) {
 	var id int64
 	fmt.Sscanf(idStr, "%d", &id)
 
+	r.ParseMultipartForm(10 << 20) // 10MB max
 	title := r.FormValue("title")
 	scoreStr := r.FormValue("score")
 	var score int
@@ -503,9 +545,18 @@ func UpdateRatedListItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// We need the listID to re-render the list.
-	// The client should send it or we can look it up.
-	// Actually, the client knows the listID from the context.
+	// Handle image removal
+	if r.FormValue("remove_image") == "1" {
+		database.UpdateRatedListItemImage(id, "")
+	}
+
+	// Handle optional image upload
+	file, header, fileErr := r.FormFile("image")
+	if fileErr == nil && header.Size > 0 {
+		defer file.Close()
+		saveRatedItemImage(id, file, header)
+	}
+
 	listIDStr := r.FormValue("list_id")
 	var listID int64
 	fmt.Sscanf(listIDStr, "%d", &listID)
@@ -841,14 +892,51 @@ func UpdateDrawingHandler(w http.ResponseWriter, r *http.Request) {
 func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	token, _ := database.GetAPIToken(userID)
+
+	// pCloud status
+	pcloudToken, _, _ := database.GetPCloudCredentials(userID)
+	backupInterval, lastBackup, _ := database.GetBackupSettings(userID)
+
+	// Google Drive status
+	_, gdriveRefresh, _ := database.GetGDriveCredentials(userID)
+
 	RenderTemplate(w, "settings.html", map[string]interface{}{
-		"APIToken": token,
+		"APIToken":       token,
+		"PCloudLinked":   pcloudToken != "",
+		"BackupInterval": backupInterval,
+		"LastBackup":     lastBackup,
+		"PCloudMsg":      r.URL.Query().Get("pcloud"),
+		"GDriveLinked":   gdriveRefresh != "",
+		"GDriveMsg":      r.URL.Query().Get("gdrive"),
 	})
 }
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func ShareHandler(w http.ResponseWriter, r *http.Request) {
+	sharedURL := r.URL.Query().Get("url")
+	title := r.URL.Query().Get("title")
+	text := r.URL.Query().Get("text")
+
+	// Android often puts the URL in "text" instead of "url"
+	if sharedURL == "" && text != "" {
+		// Try to extract a URL from the text
+		for _, word := range strings.Fields(text) {
+			if strings.HasPrefix(word, "http://") || strings.HasPrefix(word, "https://") {
+				sharedURL = word
+				break
+			}
+		}
+	}
+
+	data := map[string]interface{}{
+		"URL":   sharedURL,
+		"Title": title,
+	}
+	RenderTemplate(w, "share.html", data)
 }
 
 func RegenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -903,6 +991,43 @@ func DeleteRatedListItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// saveRatedItemImage saves an uploaded image for a rated list item
+func saveRatedItemImage(itemID int64, file multipart.File, header *multipart.FileHeader) {
+	// Determine file extension
+	ext := ".jpg"
+	if ct := header.Header.Get("Content-Type"); ct != "" {
+		switch ct {
+		case "image/png":
+			ext = ".png"
+		case "image/gif":
+			ext = ".gif"
+		case "image/webp":
+			ext = ".webp"
+		}
+	}
+
+	uploadDir := "web/static/rated_items"
+	os.MkdirAll(uploadDir, 0755)
+
+	filename := fmt.Sprintf("item_%d_%d%s", itemID, time.Now().UnixNano(), ext)
+	filepath := uploadDir + "/" + filename
+
+	dst, err := os.Create(filepath)
+	if err != nil {
+		log.Printf("Failed to create rated item image file: %v", err)
+		return
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		log.Printf("Failed to write rated item image: %v", err)
+		return
+	}
+
+	// Store relative path for serving via /static/
+	database.UpdateRatedListItemImage(itemID, "/static/rated_items/"+filename)
 }
 
 // Recipes
@@ -1091,6 +1216,41 @@ func ImportRecipeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// ShareImportRecipeHandler parses a recipe from a URL, saves it, and redirects to the detail page.
+// Used by the share sheet flow (as opposed to ImportRecipeHandler which returns JSON for AJAX).
+func ShareImportRecipeHandler(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	recipeURL := r.FormValue("url")
+	if recipeURL == "" {
+		http.Error(w, "URL parameter required", http.StatusBadRequest)
+		return
+	}
+
+	recipeData, err := ParseRecipeFromURL(recipeURL)
+	if err != nil {
+		// If parsing fails, redirect to recipes page with an error
+		http.Redirect(w, r, "/recipes", http.StatusFound)
+		return
+	}
+
+	ingredientsStr := strings.Join(recipeData.Ingredients, "\n")
+	tags := parseTags(r.FormValue("tags"))
+
+	itemID, err := database.CreateRecipe(userID, recipeData.Title, ingredientsStr, recipeData.Instructions, "", recipeData.Image, recipeURL, nil)
+	if err != nil {
+		log.Printf("ShareImportRecipe: failed to create recipe: %v", err)
+		http.Error(w, "Failed to save recipe", http.StatusInternalServerError)
+		return
+	}
+
+	if len(tags) > 0 {
+		database.SetItemTags(itemID, tags)
+	}
+
+	// Redirect to the new recipe's detail page
+	http.Redirect(w, r, fmt.Sprintf("/recipes/%d", itemID), http.StatusFound)
 }
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
@@ -1368,7 +1528,7 @@ func ApiAddRatedListItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := database.AddRatedListItem(listID, req.Title, req.Score, req.Note)
+	_, err := database.AddRatedListItem(listID, req.Title, req.Score, req.Note)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

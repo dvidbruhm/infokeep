@@ -24,3 +24,11 @@ debug_*.html
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Environment secrets
+.env
+.vapid_keys
+
+# Temporary / testing
+cookies.txt
+notes.html

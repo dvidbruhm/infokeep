@@ -1,0 +1,104 @@
+{{template "layout.html" .}}
+
+{{define "title"}}Share to InfoKeep{{end}}
+
+{{define "content"}}
+<div class="container" style="max-width: 600px; margin-top: 2rem;">
+    <div class="box">
+        <h2 class="title is-4 mb-4">
+            <i class="fas fa-share-alt mr-2"></i> Save Shared Link
+        </h2>
+
+        {{if .URL}}
+        <div class="field">
+            <label class="label">URL</label>
+            <div class="control">
+                <input class="input" type="text" id="share-url" value="{{.URL}}" readonly>
+            </div>
+        </div>
+
+        {{if .Title}}
+        <div class="field">
+            <label class="label">Title</label>
+            <div class="control">
+                <input class="input" type="text" id="share-title" value="{{.Title}}">
+            </div>
+        </div>
+        {{end}}
+
+        <div class="field">
+            <label class="label">Tags</label>
+            <div class="control">
+                <div class="tag-input-container" id="share-tags-container">
+                    <div class="tag-chips"></div>
+                    <input type="text" class="tag-entry" placeholder="Add a tag...">
+                    <input type="hidden" name="tags" id="share-tags-input">
+                    <div class="tag-suggestions"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Save as</label>
+        </div>
+
+        <div class="columns is-mobile">
+            <div class="column">
+                <form action="/bookmarks" method="POST" id="bookmark-form">
+                    <input type="hidden" name="url" value="{{.URL}}">
+                    <input type="hidden" name="title" id="bm-title"
+                        value="{{if .Title}}{{.Title}}{{else}}{{.URL}}{{end}}">
+                    <input type="hidden" name="description" value="">
+                    <input type="hidden" name="tags" id="bm-tags" value="">
+                    <button type="submit" class="button is-link is-fullwidth is-medium">
+                        <span class="icon"><i class="fas fa-bookmark"></i></span>
+                        <span>Bookmark</span>
+                    </button>
+                </form>
+            </div>
+            <div class="column">
+                <form action="/recipes/share-import" method="POST" id="recipe-form">
+                    <input type="hidden" name="url" value="{{.URL}}">
+                    <input type="hidden" name="tags" id="recipe-tags" value="">
+                    <button type="submit" class="button is-danger is-fullwidth is-medium">
+                        <span class="icon"><i class="fas fa-utensils"></i></span>
+                        <span>Recipe</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <hr>
+        <p class="has-text-grey is-size-7">
+            Shared via Android share sheet. You can edit tags and details after saving.
+        </p>
+
+        <script>
+            // Sync tags from the tag widget into the bookmark form's hidden input
+            document.getElementById('bookmark-form').addEventListener('submit', function () {
+                var tagsVal = document.getElementById('share-tags-input').value;
+                document.getElementById('bm-tags').value = tagsVal;
+            });
+            // Sync tags into the recipe form too
+            document.getElementById('recipe-form').addEventListener('submit', function () {
+                var tagsVal = document.getElementById('share-tags-input').value;
+                document.getElementById('recipe-tags').value = tagsVal;
+            });
+            // Sync editable title into the bookmark form
+            var titleEl = document.getElementById('share-title');
+            if (titleEl) {
+                titleEl.addEventListener('input', function () {
+                    document.getElementById('bm-title').value = titleEl.value;
+                });
+            }
+        </script>
+
+        {{else}}
+        <div class="notification is-warning">
+            <p>No URL was shared. Try sharing a link from your browser.</p>
+        </div>
+        <a href="/" class="button is-link">Go to Dashboard</a>
+        {{end}}
+    </div>
+</div>
+{{end}}

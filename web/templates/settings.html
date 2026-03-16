@@ -87,6 +87,101 @@
                         <p class="has-text-weight-bold">Rose Pine</p>
                     </div>
                 </div>
+
+                <!-- New Themes -->
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('midnight-ocean')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-midnight-ocean">
+                        <div class="theme-preview" style="background: #0d1b2a; border-color: #2a3f54;"></div>
+                        <p class="has-text-weight-bold">Midnight Ocean</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('monokai')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-monokai">
+                        <div class="theme-preview" style="background: #272822; border-color: #3e3d32;"></div>
+                        <p class="has-text-weight-bold">Monokai</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('tokyo-night')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-tokyo-night">
+                        <div class="theme-preview" style="background: #1a1b26; border-color: #292e42;"></div>
+                        <p class="has-text-weight-bold">Tokyo Night</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('one-dark')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-one-dark">
+                        <div class="theme-preview" style="background: #282c34; border-color: #3e4451;"></div>
+                        <p class="has-text-weight-bold">One Dark</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('everforest')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-everforest">
+                        <div class="theme-preview" style="background: #2d353b; border-color: #404d44;"></div>
+                        <p class="has-text-weight-bold">Everforest</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('kanagawa')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-kanagawa">
+                        <div class="theme-preview" style="background: #1f1f28; border-color: #2a2a37;"></div>
+                        <p class="has-text-weight-bold">Kanagawa</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('sunset-glow')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-sunset-glow">
+                        <div class="theme-preview" style="background: #1a1423; border-color: #3d2e4a;"></div>
+                        <p class="has-text-weight-bold">Sunset Glow</p>
+                    </div>
+                </div>
+                <div class="column is-4 has-text-centered">
+                    <div class="card p-4 is-clickable" onclick="applyTheme('arctic')"
+                        style="cursor: pointer; border: 2px solid transparent;" id="theme-arctic">
+                        <div class="theme-preview" style="background: #f0f4f8; border-color: #c5d5e4;"></div>
+                        <p class="has-text-weight-bold">Arctic</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button class="button" id="edit-theme-btn" onclick="openThemeEditor()"
+                    style="border-color: var(--border-color); color: var(--text-main); background: var(--card-bg);">
+                    <span class="icon"><i class="fas fa-sliders"></i></span>
+                    <span>Edit Current Theme</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Theme Editor Modal -->
+        <div class="modal" id="theme-editor-modal">
+            <div class="modal-background" onclick="closeThemeEditor()"></div>
+            <div class="modal-card" style="max-width: 560px;">
+                <header class="modal-card-head"
+                    style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                    <p class="modal-card-title" style="color: var(--text-strong);">
+                        <i class="fas fa-palette mr-2"></i>Customize Theme
+                    </p>
+                    <button class="delete" aria-label="close" onclick="closeThemeEditor()"></button>
+                </header>
+                <section class="modal-card-body" style="background: var(--app-bg);">
+                    <p class="mb-4 has-text-grey">Adjust the colors for the current theme. Changes apply instantly.</p>
+                    <div id="theme-editor-fields"></div>
+                </section>
+                <footer class="modal-card-foot"
+                    style="background: var(--card-bg); border-top: 1px solid var(--border-color); justify-content: space-between;">
+                    <button class="button is-warning is-light" onclick="resetThemeCustomizations()">
+                        <span class="icon"><i class="fas fa-undo"></i></span>
+                        <span>Reset to Default</span>
+                    </button>
+                    <button class="button is-success" onclick="closeThemeEditor()">
+                        <span class="icon"><i class="fas fa-check"></i></span>
+                        <span>Done</span>
+                    </button>
+                </footer>
             </div>
         </div>
 
@@ -147,6 +242,154 @@
         </div>
 
         <div class="box">
+            <h3 class="title is-4"><i class="fas fa-cloud mr-2"></i>Cloud Backup (pCloud)</h3>
+            <p class="mb-4">Automatically back up your database to pCloud. Link your account first, then configure the
+                backup interval.</p>
+
+            <!-- Connection Status -->
+            <div class="field">
+                <label class="label">Connection Status</label>
+                <div class="control">
+                    <div id="pcloud-status" class="mb-3">
+                        {{if .PCloudLinked}}
+                        <span class="tag is-success is-medium">
+                            <span class="icon"><i class="fas fa-check-circle"></i></span>
+                            <span>Connected to pCloud</span>
+                        </span>
+                        {{else}}
+                        <span class="tag is-warning is-medium">
+                            <span class="icon"><i class="fas fa-exclamation-circle"></i></span>
+                            <span>Not Connected</span>
+                        </span>
+                        {{end}}
+                    </div>
+                    {{if .PCloudLinked}}
+                    <button class="button is-danger is-light" onclick="unlinkPCloud()">
+                        <span class="icon"><i class="fas fa-unlink"></i></span>
+                        <span>Unlink pCloud</span>
+                    </button>
+                    {{else}}
+                    <a href="/settings/pcloud/link" class="button is-link">
+                        <span class="icon"><i class="fas fa-cloud"></i></span>
+                        <span>Link pCloud Account</span>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+
+            {{if .PCloudLinked}}
+            <hr>
+
+            <!-- Backup Interval -->
+            <div class="field">
+                <label class="label">Backup Interval</label>
+                <div class="field has-addons">
+                    <div class="control">
+                        <input class="input" type="number" id="backup-interval" value="{{.BackupInterval}}" min="1"
+                            max="365" style="width: 100px;">
+                    </div>
+                    <div class="control">
+                        <a class="button is-static">days</a>
+                    </div>
+                    <div class="control">
+                        <button class="button is-info" onclick="saveBackupInterval()">
+                            <span class="icon"><i class="fas fa-save"></i></span>
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </div>
+                <p class="help" id="interval-msg"></p>
+            </div>
+
+            <!-- Last Backup -->
+            <div class="field">
+                <label class="label">Last Backup</label>
+                <p class="mb-2" id="last-backup-display">
+                    {{if .LastBackup}}
+                    <span class="tag is-info is-light is-medium">{{.LastBackup}}</span>
+                    {{else}}
+                    <span class="tag is-light is-medium">Never</span>
+                    {{end}}
+                </p>
+            </div>
+
+            <!-- Backup Now -->
+            <div class="field">
+                <button class="button is-primary" id="backup-now-btn" onclick="backupNow()">
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                    <span>Backup Now</span>
+                </button>
+                <p class="help" id="backup-msg"></p>
+            </div>
+            {{end}}
+
+            {{if eq .PCloudMsg "linked"}}
+            <div class="notification is-success is-light mt-3">
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                pCloud account linked successfully!
+            </div>
+            {{end}}
+        </div>
+
+        <div class="box">
+            <h3 class="title is-4"><i class="fab fa-google-drive mr-2"></i>Cloud Backup (Google Drive)</h3>
+            <p class="mb-4">Automatically back up your database to Google Drive. Link your account first.</p>
+
+            <!-- Connection Status -->
+            <div class="field">
+                <label class="label">Connection Status</label>
+                <div class="control">
+                    <div id="gdrive-status" class="mb-3">
+                        {{if .GDriveLinked}}
+                        <span class="tag is-success is-medium">
+                            <span class="icon"><i class="fas fa-check-circle"></i></span>
+                            <span>Connected to Google Drive</span>
+                        </span>
+                        {{else}}
+                        <span class="tag is-warning is-medium">
+                            <span class="icon"><i class="fas fa-exclamation-circle"></i></span>
+                            <span>Not Connected</span>
+                        </span>
+                        {{end}}
+                    </div>
+                    {{if .GDriveLinked}}
+                    <button class="button is-danger is-light" onclick="unlinkGDrive()">
+                        <span class="icon"><i class="fas fa-unlink"></i></span>
+                        <span>Unlink Google Drive</span>
+                    </button>
+                    {{else}}
+                    <a href="/settings/gdrive/link" class="button is-link">
+                        <span class="icon"><i class="fab fa-google-drive"></i></span>
+                        <span>Link Google Drive</span>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+
+            {{if .GDriveLinked}}
+            <hr>
+
+            <!-- Backup Now -->
+            <div class="field">
+                <button class="button is-primary" id="gdrive-backup-now-btn" onclick="gdriveBackupNow()">
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                    <span>Backup Now</span>
+                </button>
+                <p class="help" id="gdrive-backup-msg"></p>
+            </div>
+            <p class="help">Uses the same backup interval as pCloud (configured above). Backups are saved to an
+                "InfoKeep Backups" folder on your Google Drive.</p>
+            {{end}}
+
+            {{if eq .GDriveMsg "linked"}}
+            <div class="notification is-success is-light mt-3">
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                Google Drive account linked successfully!
+            </div>
+            {{end}}
+        </div>
+
+        <div class="box">
             <h2 class="subtitle mb-4"><i class="fas fa-plug mr-2"></i> Browser Extension API Token</h2>
             <p class="has-text-grey mb-4">Use this token to authenticate the InfoKeep Firefox extension. Paste it into
                 the extension settings. Regenerating will invalidate the old token.</p>
@@ -186,11 +429,20 @@
         const currentTheme = localStorage.getItem('theme') || 'light';
         document.querySelectorAll('.is-clickable').forEach(card => {
             card.style.borderColor = 'transparent';
-            card.classList.remove('has-background-white-ter');
+            card.style.boxShadow = 'none';
+            const badge = card.querySelector('.theme-selected-badge');
+            if (badge) badge.remove();
         });
         const activeCard = document.getElementById('theme-' + currentTheme);
         if (activeCard) {
-            activeCard.style.borderColor = '#3273dc';
+            activeCard.style.borderColor = 'var(--text-strong)';
+            activeCard.style.boxShadow = '0 0 0 1px var(--text-strong)';
+            const badge = document.createElement('p');
+            badge.className = 'theme-selected-badge has-text-weight-bold is-size-7';
+            badge.style.color = 'var(--text-strong)';
+            badge.style.marginTop = '0.25rem';
+            badge.textContent = '✓ Selected';
+            activeCard.appendChild(badge);
         }
     }
 
@@ -225,5 +477,266 @@
                 msg.className = 'help is-warning';
             });
     }
+
+    // pCloud functions
+    function unlinkPCloud() {
+        if (!confirm('This will disconnect your pCloud account. Automatic backups will stop. Continue?')) return;
+        fetch('/settings/pcloud/unlink', { method: 'POST' })
+            .then(r => r.json())
+            .then(() => {
+                window.location.reload();
+            });
+    }
+
+    function saveBackupInterval() {
+        const days = document.getElementById('backup-interval').value;
+        const formData = new FormData();
+        formData.append('days', days);
+        fetch('/settings/pcloud/interval', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                const msg = document.getElementById('interval-msg');
+                msg.textContent = 'Backup interval saved! Backing up every ' + data.days + ' days.';
+                msg.className = 'help is-success';
+                setTimeout(() => msg.textContent = '', 3000);
+            });
+    }
+
+    function backupNow() {
+        const btn = document.getElementById('backup-now-btn');
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+        fetch('/settings/pcloud/backup-now', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                const msg = document.getElementById('backup-msg');
+                msg.textContent = 'Backup started! It will upload in the background.';
+                msg.className = 'help is-success';
+                btn.classList.remove('is-loading');
+                btn.disabled = false;
+                setTimeout(() => msg.textContent = '', 5000);
+            })
+            .catch(() => {
+                const msg = document.getElementById('backup-msg');
+                msg.textContent = 'Failed to start backup.';
+                msg.className = 'help is-danger';
+                btn.classList.remove('is-loading');
+                btn.disabled = false;
+            });
+    }
+
+    // Google Drive functions
+    function unlinkGDrive() {
+        if (!confirm('This will disconnect your Google Drive account. Automatic backups will stop. Continue?')) return;
+        fetch('/settings/gdrive/unlink', { method: 'POST' })
+            .then(r => r.json())
+            .then(() => {
+                window.location.reload();
+            });
+    }
+
+    function gdriveBackupNow() {
+        const btn = document.getElementById('gdrive-backup-now-btn');
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+        fetch('/settings/gdrive/backup-now', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                const msg = document.getElementById('gdrive-backup-msg');
+                msg.textContent = 'Backup started! It will upload in the background.';
+                msg.className = 'help is-success';
+                btn.classList.remove('is-loading');
+                btn.disabled = false;
+                setTimeout(() => msg.textContent = '', 5000);
+            })
+            .catch(() => {
+                const msg = document.getElementById('gdrive-backup-msg');
+                msg.textContent = 'Failed to start backup.';
+                msg.className = 'help is-danger';
+                btn.classList.remove('is-loading');
+                btn.disabled = false;
+            });
+    }
+
+    // ===== Theme Editor =====
+    const themeDefaults = {
+        light: { '--app-bg': '#f5f7fa', '--sidebar-bg': '#ffffff', '--card-bg': '#ffffff', '--text-main': '#4a4a4a', '--text-strong': '#363636', '--text-muted': '#7a7a7a', '--border-color': '#e1e4e8', '--input-bg': '#ffffff' },
+        dark: { '--app-bg': '#111216', '--sidebar-bg': '#1a1c23', '--card-bg': '#1a1c23', '--text-main': '#e1e4e8', '--text-strong': '#ffffff', '--text-muted': '#9ea4b0', '--border-color': '#2d303a', '--input-bg': '#2d303a' },
+        sepia: { '--app-bg': '#fdf6e3', '--sidebar-bg': '#eee8d5', '--card-bg': '#eee8d5', '--text-main': '#657b83', '--text-strong': '#586e75', '--text-muted': '#93a1a1', '--border-color': '#d6d1bd', '--input-bg': '#fdf6e3' },
+        dracula: { '--app-bg': '#282a36', '--sidebar-bg': '#21222c', '--card-bg': '#21222c', '--text-main': '#f8f8f2', '--text-strong': '#ffffff', '--text-muted': '#6272a4', '--border-color': '#44475a', '--input-bg': '#44475a' },
+        catppuccin: { '--app-bg': '#1e1e2e', '--sidebar-bg': '#181825', '--card-bg': '#181825', '--text-main': '#cdd6f4', '--text-strong': '#f5e0dc', '--text-muted': '#9399b2', '--border-color': '#313244', '--input-bg': '#313244' },
+        synthwave: { '--app-bg': '#2b213a', '--sidebar-bg': '#241b2f', '--card-bg': '#241b2f', '--text-main': '#f0f0f0', '--text-strong': '#ffffff', '--text-muted': '#b6b1b1', '--border-color': '#493863', '--input-bg': '#2b213a' },
+        nord: { '--app-bg': '#2e3440', '--sidebar-bg': '#3b4252', '--card-bg': '#3b4252', '--text-main': '#d8dee9', '--text-strong': '#eceff4', '--text-muted': '#81a1c1', '--border-color': '#434c5e', '--input-bg': '#434c5e' },
+        gruvbox: { '--app-bg': '#282828', '--sidebar-bg': '#3c3836', '--card-bg': '#3c3836', '--text-main': '#ebdbb2', '--text-strong': '#fbf1c7', '--text-muted': '#a89984', '--border-color': '#504945', '--input-bg': '#504945' },
+        'rose-pine': { '--app-bg': '#191724', '--sidebar-bg': '#1f1d2e', '--card-bg': '#1f1d2e', '--text-main': '#e0def4', '--text-strong': '#fffaf3', '--text-muted': '#908caa', '--border-color': '#44415a', '--input-bg': '#26233a' },
+        'midnight-ocean': { '--app-bg': '#0d1b2a', '--sidebar-bg': '#1b2838', '--card-bg': '#1b2838', '--text-main': '#c9d6df', '--text-strong': '#e8f1f8', '--text-muted': '#6b8299', '--border-color': '#2a3f54', '--input-bg': '#172533' },
+        'monokai': { '--app-bg': '#272822', '--sidebar-bg': '#1e1f1c', '--card-bg': '#1e1f1c', '--text-main': '#f8f8f2', '--text-strong': '#ffffff', '--text-muted': '#75715e', '--border-color': '#3e3d32', '--input-bg': '#3e3d32' },
+        'tokyo-night': { '--app-bg': '#1a1b26', '--sidebar-bg': '#16161e', '--card-bg': '#16161e', '--text-main': '#a9b1d6', '--text-strong': '#c0caf5', '--text-muted': '#565f89', '--border-color': '#292e42', '--input-bg': '#292e42' },
+        'one-dark': { '--app-bg': '#282c34', '--sidebar-bg': '#21252b', '--card-bg': '#21252b', '--text-main': '#abb2bf', '--text-strong': '#e5e9f0', '--text-muted': '#5c6370', '--border-color': '#3e4451', '--input-bg': '#3e4451' },
+        'everforest': { '--app-bg': '#2d353b', '--sidebar-bg': '#232a2e', '--card-bg': '#232a2e', '--text-main': '#d3c6aa', '--text-strong': '#e5dfc5', '--text-muted': '#859289', '--border-color': '#404d44', '--input-bg': '#343f44' },
+        'kanagawa': { '--app-bg': '#1f1f28', '--sidebar-bg': '#16161d', '--card-bg': '#16161d', '--text-main': '#dcd7ba', '--text-strong': '#fffaf3', '--text-muted': '#727169', '--border-color': '#2a2a37', '--input-bg': '#2a2a37' },
+        'sunset-glow': { '--app-bg': '#1a1423', '--sidebar-bg': '#231c2e', '--card-bg': '#231c2e', '--text-main': '#e8d5c4', '--text-strong': '#ffeedd', '--text-muted': '#9a7e8f', '--border-color': '#3d2e4a', '--input-bg': '#2d2238' },
+        'arctic': { '--app-bg': '#f0f4f8', '--sidebar-bg': '#e2ecf4', '--card-bg': '#e2ecf4', '--text-main': '#435261', '--text-strong': '#1e3a5f', '--text-muted': '#7d93a8', '--border-color': '#c5d5e4', '--input-bg': '#f0f4f8' }
+    };
+
+    const varLabels = {
+        '--app-bg': 'Background',
+        '--sidebar-bg': 'Sidebar',
+        '--card-bg': 'Card / Box',
+        '--text-main': 'Text',
+        '--text-strong': 'Headings',
+        '--text-muted': 'Muted Text',
+        '--border-color': 'Borders',
+        '--input-bg': 'Input Fields'
+    };
+
+    function getCustomOverrides(theme) {
+        try { return JSON.parse(localStorage.getItem('theme-custom-' + theme)) || {}; }
+        catch { return {}; }
+    }
+
+    function saveCustomOverrides(theme, overrides) {
+        if (Object.keys(overrides).length === 0) {
+            localStorage.removeItem('theme-custom-' + theme);
+        } else {
+            localStorage.setItem('theme-custom-' + theme, JSON.stringify(overrides));
+        }
+    }
+
+    function getCurrentColor(varName) {
+        return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    }
+
+    function openThemeEditor() {
+        const theme = localStorage.getItem('theme') || 'light';
+        const defaults = themeDefaults[theme] || themeDefaults.light;
+        const overrides = getCustomOverrides(theme);
+        const container = document.getElementById('theme-editor-fields');
+        container.innerHTML = '';
+
+        Object.entries(varLabels).forEach(([varName, label]) => {
+            const currentVal = overrides[varName] || defaults[varName] || getCurrentColor(varName);
+            const isCustom = overrides[varName] !== undefined;
+
+            const row = document.createElement('div');
+            row.className = 'field is-horizontal mb-3';
+            row.innerHTML = `
+                <div class="field-label is-normal" style="flex-grow: 0; min-width: 110px;">
+                    <label class="label is-size-7" style="white-space: nowrap;">${label}</label>
+                </div>
+                <div class="field-body">
+                    <div class="field has-addons">
+                        <div class="control">
+                            <input type="color" value="${currentVal}" data-var="${varName}"
+                                style="width: 42px; height: 36px; border: 1px solid var(--border-color); border-radius: 4px 0 0 4px; cursor: pointer; padding: 2px;"
+                                oninput="onThemeColorChange(this)">
+                        </div>
+                        <div class="control is-expanded">
+                            <input class="input is-small" type="text" value="${currentVal}" data-var="${varName}"
+                                style="font-family: monospace; text-transform: uppercase;"
+                                oninput="onThemeHexInput(this)">
+                        </div>
+                        <div class="control">
+                            <button class="button is-small ${isCustom ? '' : 'is-static'}" data-var="${varName}"
+                                onclick="resetSingleColor(this, '${varName}')"
+                                title="Reset to default" ${isCustom ? '' : 'disabled'}>
+                                <span class="icon"><i class="fas fa-undo"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            container.appendChild(row);
+        });
+
+        document.getElementById('theme-editor-modal').classList.add('is-active');
+    }
+
+    function closeThemeEditor() {
+        document.getElementById('theme-editor-modal').classList.remove('is-active');
+    }
+
+    function onThemeColorChange(picker) {
+        const varName = picker.dataset.var;
+        const value = picker.value;
+        // Sync hex input
+        const hexInput = picker.closest('.field').querySelector('input[type="text"][data-var="' + varName + '"]');
+        if (hexInput) hexInput.value = value;
+        applyAndSaveColor(varName, value);
+    }
+
+    function onThemeHexInput(input) {
+        const varName = input.dataset.var;
+        let value = input.value.trim();
+        if (!value.startsWith('#')) value = '#' + value;
+        if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+            // Sync color picker
+            const picker = input.closest('.field').querySelector('input[type="color"][data-var="' + varName + '"]');
+            if (picker) picker.value = value;
+            applyAndSaveColor(varName, value);
+        }
+    }
+
+    function applyAndSaveColor(varName, value) {
+        document.documentElement.style.setProperty(varName, value);
+        const theme = localStorage.getItem('theme') || 'light';
+        const defaults = themeDefaults[theme] || {};
+        const overrides = getCustomOverrides(theme);
+
+        if (value === defaults[varName]) {
+            delete overrides[varName];
+        } else {
+            overrides[varName] = value;
+        }
+        saveCustomOverrides(theme, overrides);
+
+        // Enable/disable reset button
+        const btn = document.querySelector('#theme-editor-fields button[data-var="' + varName + '"]');
+        if (btn) {
+            const isCustom = overrides[varName] !== undefined;
+            btn.disabled = !isCustom;
+            btn.classList.toggle('is-static', !isCustom);
+        }
+    }
+
+    function resetSingleColor(btn, varName) {
+        const theme = localStorage.getItem('theme') || 'light';
+        const defaults = themeDefaults[theme] || {};
+        const defaultVal = defaults[varName] || '';
+
+        document.documentElement.style.removeProperty(varName);
+        const overrides = getCustomOverrides(theme);
+        delete overrides[varName];
+        saveCustomOverrides(theme, overrides);
+
+        // Update inputs
+        const picker = document.querySelector('#theme-editor-fields input[type="color"][data-var="' + varName + '"]');
+        const hex = document.querySelector('#theme-editor-fields input[type="text"][data-var="' + varName + '"]');
+        if (picker) picker.value = defaultVal;
+        if (hex) hex.value = defaultVal;
+        btn.disabled = true;
+        btn.classList.add('is-static');
+    }
+
+    function resetThemeCustomizations() {
+        if (!confirm('Reset all customizations for this theme?')) return;
+        const theme = localStorage.getItem('theme') || 'light';
+        localStorage.removeItem('theme-custom-' + theme);
+        // Remove all inline overrides
+        Object.keys(varLabels).forEach(v => document.documentElement.style.removeProperty(v));
+        // Re-open editor to refresh values
+        openThemeEditor();
+    }
+
+    // Apply custom overrides when the page loads (and when switching themes)
+    function applyCustomOverrides() {
+        const theme = localStorage.getItem('theme') || 'light';
+        const overrides = getCustomOverrides(theme);
+        // Clear any previous inline overrides first
+        Object.keys(varLabels).forEach(v => document.documentElement.style.removeProperty(v));
+        Object.entries(overrides).forEach(([k, v]) => {
+            document.documentElement.style.setProperty(k, v);
+        });
+    }
+    applyCustomOverrides();
 </script>
 {{end}}

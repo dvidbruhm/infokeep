@@ -10,5 +10,11 @@ services:
       - ./infokeep.db:/app/infokeep.db
       # Persist uploaded media
       - ./web/static/uploads:/app/web/static/uploads
+    env_file:
+      - .env
     environment:
       - PORT=8080
+      # Timezone Syncing
+      # Set this to your local timezone (e.g. America/New_York) if you are on Windows.
+      # By default, Docker sets it to UTC.
+      - TZ=${TZ:-America/New_York}

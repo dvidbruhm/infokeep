@@ -11,6 +11,12 @@
     </div>
     <div class="level-right">
         <div class="level-item">
+            <div class="view-toggle-btn mr-3" id="view-toggle" title="Switch view">
+                <button data-view="card" title="Card view"><i class="fas fa-th-large"></i></button>
+                <button data-view="list" title="List view"><i class="fas fa-list"></i></button>
+            </div>
+        </div>
+        <div class="level-item">
             <button class="button is-link is-outlined mr-2" onclick="openImportRecipeModal()">
                 <span class="icon"><i class="fas fa-download"></i></span>
                 <span>Import from URL</span>
@@ -66,7 +72,5 @@
 
 {{template "recipe_modal" .}}
 
-<!-- Recipe Detail Modal (Removed, using full page) -->
-
-<!-- Scripts moved to static/js/recipes.js -->
+<script>initViewToggle('recipes');</script>
 {{end}}

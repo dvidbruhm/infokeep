@@ -11,10 +11,14 @@
     </div>
     <div class="level-right">
         <div class="level-item">
+            <div class="view-toggle-btn mr-3" id="view-toggle" title="Switch view">
+                <button data-view="card" title="Card view"><i class="fas fa-th-large"></i></button>
+                <button data-view="list" title="List view"><i class="fas fa-list"></i></button>
+            </div>
+        </div>
+        <div class="level-item">
             <button class="button is-link" onclick="openBookmarkModal()">
-                <span class="icon">
-                    <i class="fas fa-plus"></i>
-                </span>
+                <span class="icon"><i class="fas fa-plus"></i></span>
                 <span>Add Bookmark</span>
             </button>
         </div>
@@ -121,6 +125,7 @@
     function closeBookmarkModal() {
         document.getElementById('bookmark-modal').classList.remove('is-active');
     }
+    initViewToggle('bookmarks');
 
     function editBookmark(id) {
         fetch(`/bookmarks/${id}`)

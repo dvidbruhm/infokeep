@@ -9,10 +9,8 @@
         </div>
         {{else}}
         <div class="card-image">
-            <figure class="image is-16by9 has-background-light is-flex is-align-items-center is-justify-content-center">
-                <span class="icon is-large has-text-grey-lighter">
-                    <i class="fas fa-utensils fa-3x"></i>
-                </span>
+            <figure class="image is-16by9">
+                <img src="/static/favicon.svg" alt="InfoKeep" style="object-fit: cover; opacity: 0.5;">
             </figure>
         </div>
         {{end}}
@@ -41,6 +39,11 @@
                     <i class="fas fa-clock mr-1"></i> {{.created_at}}
                 </p>
                 <div class="card-actions">
+                    <button class="button is-small is-white has-text-grey-dark p-1 mr-1"
+                        onclick="event.preventDefault(); event.stopPropagation(); openShareModal('recipe', {{.id}})"
+                        title="Share">
+                        <i class="fas fa-share-nodes"></i>
+                    </button>
                     <button class="button is-small is-white has-text-link p-1 mr-1"
                         onclick="event.preventDefault(); event.stopPropagation(); editRecipe({{.id}})" title="Edit">
                         <i class="fas fa-edit"></i>

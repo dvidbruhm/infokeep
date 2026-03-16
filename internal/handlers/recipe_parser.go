@@ -48,7 +48,12 @@ func ParseRecipeFromURL(url string) (*RecipeData, error) {
 		return recipe, nil
 	}
 
-	// Fallback to HTML parsing
+	// Try Microdata (itemprop attributes) second
+	if recipe := extractMicrodata(doc); recipe != nil {
+		return recipe, nil
+	}
+
+	// Fallback to HTML heuristic parsing
 	return extractFromHTML(doc)
 }
 
@@ -223,6 +228,84 @@ func extractFromHTML(doc *html.Node) (*RecipeData, error) {
 	}
 
 	return recipe, nil
+}
+
+// extractMicrodata extracts recipe data from Schema.org Microdata (itemprop attributes)
+func extractMicrodata(doc *html.Node) *RecipeData {
+	recipe := &RecipeData{
+		Ingredients: []string{},
+	}
+
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		if n.Type == html.ElementNode {
+			itemprop := getAttr(n, "itemprop")
+
+			switch itemprop {
+			case "name":
+				if recipe.Title == "" {
+					recipe.Title = strings.TrimSpace(getTextContent(n))
+				}
+			case "recipeIngredient":
+				text := strings.TrimSpace(getTextContent(n))
+				if text != "" {
+					recipe.Ingredients = append(recipe.Ingredients, text)
+				}
+			case "recipeInstructions":
+				text := strings.TrimSpace(getTextContent(n))
+				if text != "" {
+					if recipe.Instructions != "" {
+						recipe.Instructions += "\n" + text
+					} else {
+						recipe.Instructions = text
+					}
+				}
+			case "image":
+				if recipe.Image == "" {
+					if src := getAttr(n, "src"); src != "" {
+						recipe.Image = src
+					} else if content := getAttr(n, "content"); content != "" {
+						recipe.Image = content
+					} else if href := getAttr(n, "href"); href != "" {
+						recipe.Image = href
+					}
+				}
+			}
+		}
+
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(doc)
+
+	// Only return if we got meaningful data
+	if recipe.Title != "" && (len(recipe.Ingredients) > 0 || recipe.Instructions != "") {
+		return recipe
+	}
+	return nil
+}
+
+// getAttr returns the value of an attribute on an HTML node
+func getAttr(n *html.Node, key string) string {
+	for _, attr := range n.Attr {
+		if attr.Key == key {
+			return attr.Val
+		}
+	}
+	return ""
+}
+
+// getTextContent recursively extracts all text content from a node
+func getTextContent(n *html.Node) string {
+	if n.Type == html.TextNode {
+		return n.Data
+	}
+	var sb strings.Builder
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		sb.WriteString(getTextContent(c))
+	}
+	return sb.String()
 }
 
 // extractInstructions handles various instruction formats including HowToSection

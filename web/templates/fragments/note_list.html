@@ -7,6 +7,10 @@
                 {{.title}}
             </p>
             <div class="card-header-icon card-actions">
+                <button class="button is-small is-white has-text-grey-dark mr-1"
+                    onclick="openShareModal('note', {{.id}})" title="Share">
+                    <i class="fas fa-share-nodes"></i>
+                </button>
                 <button class="button is-small is-white has-text-link mr-1" onclick="editNote({{.id}})" title="Edit">
                     <i class="fas fa-edit"></i>
                 </button>

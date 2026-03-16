@@ -8,6 +8,10 @@
         <h1 class="title">Notes</h1>
     </div>
     <div class="level-right">
+        <div class="view-toggle-btn mr-3" id="view-toggle" title="Switch view">
+            <button data-view="card" title="Card view"><i class="fas fa-th-large"></i></button>
+            <button data-view="list" title="List view"><i class="fas fa-list"></i></button>
+        </div>
         <button class="button is-warning" onclick="openNoteModal()">
             <span class="icon"><i class="fas fa-plus"></i></span>
             <span>New Note</span>
@@ -97,6 +101,7 @@
     function closeNoteModal() {
         document.getElementById('note-modal').classList.remove('is-active');
     }
+    initViewToggle('notes');
 
     function editNote(id) {
         fetch(`/notes/${id}`)

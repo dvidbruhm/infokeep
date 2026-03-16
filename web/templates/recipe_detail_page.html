@@ -31,6 +31,10 @@
             {{end}}
 
             <div class="buttons mt-4">
+                <button class="button is-white has-text-grey-dark" onclick="openShareModal('recipe', {{.Recipe.id}})">
+                    <span class="icon"><i class="fas fa-share-nodes"></i></span>
+                    <span>Share</span>
+                </button>
                 <button class="button is-link is-outlined" onclick="editRecipe({{.Recipe.id}})">
                     <span class="icon"><i class="fas fa-edit"></i></span>
                     <span>Edit</span>

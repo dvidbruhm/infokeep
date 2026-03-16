@@ -19,6 +19,14 @@ func main() {
 	}
 	defer database.DB.Close()
 
+	// Start backup scheduler in background
+	go handlers.StartBackupScheduler(dbPath)
+
+	// Initialize Web Push VAPID keys
+	handlers.InitVAPIDKeys()
+	// Start the Reminders scheduler
+	go handlers.StartReminderWorker()
+
 	r := chi.NewRouter()
 
 	// Middleware
@@ -30,6 +38,12 @@ func main() {
 	filesDir := http.Dir(workDir + "/web/static")
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(filesDir)))
 
+	// Service worker must be served from root for full scope
+	r.Get("/sw.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(w, r, workDir+"/web/static/sw.js")
+	})
+
 	// Routes
 	r.Get("/login", handlers.LoginHandler)
 	r.Post("/login", handlers.LoginHandler)
@@ -37,11 +51,15 @@ func main() {
 	r.Post("/register", handlers.RegisterHandler)
 	r.Post("/logout", handlers.LogoutHandler)
 
+	// Public Share Route (No Auth Required)
+	r.Get("/shared/{hash}", handlers.PublicViewHandler)
+
 	// Protected Routes
 	r.Group(func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware)
 
 		r.Get("/", handlers.IndexHandler)
+		r.Get("/share", handlers.ShareHandler)
 		r.Get("/bookmarks", handlers.BookmarkHandler)
 		r.Post("/bookmarks", handlers.BookmarkHandler)
 		r.Get("/bookmarks/{id}", handlers.GetBookmarkHandler)
@@ -56,9 +74,6 @@ func main() {
 		r.Post("/rated-lists/{id}/items", handlers.RatedListItemHandler)
 		r.Get("/rated-list-items/{id}", handlers.GetRatedListItemHandler)
 		r.Post("/rated-list-items/{id}", handlers.UpdateRatedListItemHandler)
-		r.Get("/settings", handlers.SettingsHandler)
-		r.Get("/settings/export", handlers.ExportDataHandler)
-		r.Post("/settings/import", handlers.ImportDataHandler)
 		r.Get("/drawings", handlers.DrawingsHandler)
 		r.Post("/drawings", handlers.CreateDrawingHandler)
 		r.Get("/drawings/{id}", handlers.GetDrawingHandler)
@@ -75,14 +90,36 @@ func main() {
 		r.Get("/recipes", handlers.RecipeHandler)
 		r.Post("/recipes", handlers.CreateRecipeHandler)
 		r.Get("/recipes/import", handlers.ImportRecipeHandler)
+		r.Post("/recipes/share-import", handlers.ShareImportRecipeHandler)
 		r.Get("/recipes/{id}", handlers.GetRecipeHandler)
 		r.Post("/recipes/{id}", handlers.UpdateRecipeHandler)
 		r.Get("/search", handlers.SearchHandler)
 		r.Get("/tags/suggestions", handlers.TagSuggestionsHandler)
-		r.Delete("/items/{id}", handlers.DeleteItemHandler)
-		r.Delete("/list-items/{id}", handlers.DeleteListItemHandler)
-		r.Delete("/rated-list-items/{id}", handlers.DeleteRatedListItemHandler)
-		r.Post("/settings/token/regenerate", handlers.RegenerateTokenHandler)
+
+		// Settings Routes
+		r.Get("/settings", handlers.SettingsHandler)
+		r.Post("/settings/import", handlers.ImportDataHandler)
+		r.Get("/settings/export", handlers.ExportDataHandler)
+
+		// pCloud Routes
+		r.Get("/settings/pcloud/link", handlers.PCloudLinkHandler)
+		r.Get("/settings/pcloud/callback", handlers.PCloudCallbackHandler)
+		r.Post("/settings/pcloud/unlink", handlers.PCloudUnlinkHandler)
+		r.Post("/settings/pcloud/backup-now", handlers.PCloudBackupNowHandler)
+		r.Post("/settings/pcloud/interval", handlers.PCloudUpdateIntervalHandler)
+		r.Get("/settings/pcloud/status", handlers.PCloudStatusHandler)
+
+		// Google Drive Routes
+		r.Get("/settings/gdrive/link", handlers.GDriveLinkHandler)
+		r.Get("/settings/gdrive/callback", handlers.GDriveCallbackHandler)
+		r.Post("/settings/gdrive/unlink", handlers.GDriveUnlinkHandler)
+		r.Post("/settings/gdrive/backup-now", handlers.GDriveBackupNowHandler)
+
+		// Reminders & Web Push
+		r.Get("/reminders", handlers.RemindersPageHandler)
+		r.Post("/reminders", handlers.AddReminderHandler)
+		r.Delete("/reminders/{id}", handlers.DeleteReminderHandler)
+		r.Post("/api/push/subscribe", handlers.SavePushSubscriptionHandler)
 	})
 
 	// API Routes (CORS enabled in handlers)
@@ -99,6 +136,10 @@ func main() {
 		r.Post("/rated-lists/{id}/items", handlers.ApiAddRatedListItemHandler)
 		r.Post("/recipes/clipper", handlers.ApiCreateRecipeClipperHandler)
 		r.Get("/tags", handlers.ApiGetTagsHandler)
+
+		// Share Links
+		r.Post("/share", handlers.GenerateShareLinkHandler)
+		r.Delete("/share/{hash}", handlers.RevokeShareLinkHandler)
 	})
 
 	log.Println("Server starting on :8080")

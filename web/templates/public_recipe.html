@@ -1,0 +1,93 @@
+{{define "title"}}{{.Recipe.title}} - InfoKeep Shared Recipe{{end}}
+{{define "content"}}
+<div class="content">
+    <div class="columns is-vcentered">
+        {{if .Recipe.thumbnail}}
+        <div class="column is-narrow">
+            <figure class="image is-128x128">
+                <img src="{{.Recipe.thumbnail}}" alt="{{.Recipe.title}}" style="object-fit: cover; border-radius: 8px;">
+            </figure>
+        </div>
+        {{end}}
+        <div class="column">
+            <h1 class="title is-2 mb-2">{{.Recipe.title}}</h1>
+            {{if .Recipe.source_url}}
+            <p class="subtitle is-6 mb-2">
+                <a href="{{.Recipe.source_url}}" target="_blank" class="has-text-link">
+                    <i class="fas fa-external-link-alt mr-1"></i> Original Source
+                </a>
+            </p>
+            {{end}}
+            {{if .Recipe.tags}}
+            <div class="tags mt-2">
+                {{range .Recipe.tags}}
+                <span class="tag is-info is-light is-small">{{.}}</span>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="columns mt-4">
+        <div class="column is-5">
+            <div class="box">
+                <h3 class="title is-4"><i class="fas fa-list-ul mr-2 has-text-primary"></i> Ingredients</h3>
+                <div id="recipe-ingredients" class="content is-size-6" data-ingredients="{{.Recipe.ingredients}}"></div>
+            </div>
+        </div>
+        <div class="column is-7">
+            <h3 class="title is-4"><i class="fas fa-utensils mr-2 has-text-primary"></i> Instructions</h3>
+            <div id="recipe-instructions" class="is-size-6" style="line-height: 1.6;" data-instructions="{{.Recipe.instructions}}"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Parse Ingredients
+            const ingContainer = document.getElementById('recipe-ingredients');
+            const ingData = ingContainer.getAttribute('data-ingredients');
+            if (ingData) {
+                const lines = ingData.split('\n').filter(l => l.trim() !== '');
+                const ul = document.createElement('ul');
+                ul.style.marginTop = '0';
+                ul.style.marginLeft = '1.5em';
+                ul.style.listStyleType = 'disc';
+                lines.forEach(line => {
+                    const li = document.createElement('li');
+                    li.textContent = line.trim();
+                    ul.appendChild(li);
+                });
+                ingContainer.appendChild(ul);
+            }
+
+            // Parse Instructions
+            const instContainer = document.getElementById('recipe-instructions');
+            const instData = instContainer.getAttribute('data-instructions');
+            if (instData) {
+                const lines = instData.split('\n').filter(l => l.trim() !== '');
+                lines.forEach(line => {
+                    const p = document.createElement('p');
+                    p.className = 'mb-4';
+                    p.textContent = line.trim();
+                    instContainer.appendChild(p);
+                });
+            }
+        });
+    </script>
+
+    {{if .Recipe.notes}}
+    <div class="notification is-warning is-light mt-5">
+        <h4 class="title is-5"><i class="fas fa-sticky-note mr-2"></i> Chef's Notes</h4>
+        <div class="is-size-6" style="white-space: pre-wrap;">{{.Recipe.notes}}</div>
+    </div>
+    {{end}}
+
+    <div class="mt-6 pt-5" style="border-top: 1px solid var(--bulma-border-light);">
+        <p class="is-size-7 has-text-grey">
+            <i class="fas fa-clock mr-1"></i> Saved to InfoKeep on {{.Recipe.created_at}}
+        </p>
+    </div>
+</div>
+{{end}}

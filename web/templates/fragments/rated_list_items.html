@@ -1,6 +1,7 @@
 <table class="table is-fullwidth is-hoverable">
     <thead>
         <tr>
+            <th style="width: 50px;"></th>
             <th>Item</th>
             <th class="has-text-centered">Score</th>
             <th>Note</th>
@@ -10,6 +11,16 @@
     <tbody>
         {{range .}}
         <tr>
+            <td style="width: 50px; padding: 0.25rem 0.5rem;">
+                {{if index . "image_path"}}
+                <img src="{{index . " image_path"}}" alt=""
+                    style="width:40px; height:40px; object-fit:cover; border-radius:4px; cursor:pointer;"
+                    onclick="window.open(this.src, '_blank')">
+                {{else}}
+                <img src="/static/favicon.svg" alt="InfoKeep"
+                    style="width:40px; height:40px; object-fit:cover; border-radius:4px; opacity: 0.5;">
+                {{end}}
+            </td>
             <td><strong>{{.title}}</strong></td>
             <td class="has-text-centered">
                 <span class="tag is-info is-light is-medium">{{.score}}/10</span>
@@ -28,7 +39,7 @@
         </tr>
         {{else}}
         <tr>
-            <td colspan="4" class="has-text-centered py-6 has-text-grey">
+            <td colspan="5" class="has-text-centered py-6 has-text-grey">
                 No items in this list yet. Start ranking!
             </td>
         </tr>

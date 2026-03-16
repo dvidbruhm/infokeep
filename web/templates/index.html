@@ -7,6 +7,12 @@
     <div class="level-left">
         <h1 class="title">My Library</h1>
     </div>
+    <div class="level-right">
+        <div class="view-toggle-btn" id="view-toggle" title="Switch view">
+            <button data-view="card" title="Card view"><i class="fas fa-th-large"></i></button>
+            <button data-view="list" title="List view"><i class="fas fa-list"></i></button>
+        </div>
+    </div>
 </div>
 
 <div class="columns" id="main-search-target">
@@ -25,6 +31,12 @@
                     <div class="card-image">
                         <figure class="image is-16by9">
                             <img src="{{.thumbnail}}" alt="{{.title}}" style="object-fit: cover;">
+                        </figure>
+                    </div>
+                    {{else}}
+                    <div class="card-image">
+                        <figure class="image is-16by9">
+                            <img src="/static/favicon.svg" alt="InfoKeep" style="object-fit: cover; opacity: 0.5;">
                         </figure>
                     </div>
                     {{end}}
@@ -208,6 +220,12 @@
                             <img src="{{.thumbnail}}" alt="{{.title}}" style="object-fit: cover;">
                         </figure>
                     </div>
+                    {{else}}
+                    <div class="card-image">
+                        <figure class="image is-16by9">
+                            <img src="/static/favicon.svg" alt="InfoKeep" style="object-fit: cover; opacity: 0.5;">
+                        </figure>
+                    </div>
                     {{end}}
                     <div class="card-content p-4">
                         <p class="has-text-weight-bold mb-2">{{.title}}</p>
@@ -235,4 +253,5 @@
         <div class="py-6"></div>
     </div>
 </div>
+<script>initViewToggle('dashboard');</script>
 {{end}}

@@ -377,7 +377,7 @@ func ImportDataHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			database.SetItemTags(id, l.Tags)
 			for _, item := range l.Items {
-				database.AddRatedListItem(id, item.Title, item.Score, item.Note)
+				database.AddRatedListItem(id, item.Title, item.Score, item.Note) //nolint:errcheck
 			}
 		}
 	}
