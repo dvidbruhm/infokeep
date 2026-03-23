@@ -132,5 +132,15 @@
                 alert("Failed to load note for editing: " + err.message);
             });
     }
+    // Auto-open edit modal if URL has #note-{id} hash (from pinned items)
+    document.getElementById('main-search-target').addEventListener('htmx:afterSettle', function handler() {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#note-')) {
+            const id = hash.replace('#note-', '');
+            if (id) editNote(parseInt(id));
+            history.replaceState(null, '', window.location.pathname);
+        }
+        this.removeEventListener('htmx:afterSettle', handler);
+    });
 </script>
 {{end}}

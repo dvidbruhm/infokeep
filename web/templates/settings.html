@@ -415,6 +415,35 @@
         </div>
 
         <div class="box">
+            <h2 class="subtitle mb-2"><i class="fas fa-door-open mr-2"></i> Default Landing Page</h2>
+            <p class="has-text-grey mb-4">Choose which page to land on when you first open the app.</p>
+            <div class="field has-addons">
+                <div class="control is-expanded">
+                    <div class="select is-fullwidth">
+                        <select id="landing-page-select">
+                            <option value="dashboard" {{if eq .DefaultPage "dashboard"}}selected{{end}}>🏠 Dashboard</option>
+                            <option value="bookmarks" {{if eq .DefaultPage "bookmarks"}}selected{{end}}>🔖 Bookmarks</option>
+                            <option value="notes" {{if eq .DefaultPage "notes"}}selected{{end}}>📝 Notes</option>
+                            <option value="recipes" {{if eq .DefaultPage "recipes"}}selected{{end}}>🍽️ Recipes</option>
+                            <option value="media" {{if eq .DefaultPage "media"}}selected{{end}}>🖼️ Images</option>
+                            <option value="lists" {{if eq .DefaultPage "lists"}}selected{{end}}>✅ Checklists</option>
+                            <option value="rated-lists" {{if eq .DefaultPage "rated-lists"}}selected{{end}}>⭐ Rated Lists</option>
+                            <option value="drawings" {{if eq .DefaultPage "drawings"}}selected{{end}}>✏️ Drawings</option>
+                            <option value="reminders" {{if eq .DefaultPage "reminders"}}selected{{end}}>🔔 Reminders</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <button class="button is-success" onclick="saveLandingPage()">
+                        <span class="icon"><i class="fas fa-save"></i></span>
+                        <span>Save</span>
+                    </button>
+                </div>
+            </div>
+            <p class="help" id="landing-page-msg"></p>
+        </div>
+
+        <div class="box">
             <h2 class="subtitle mb-4"><i class="fas fa-info-circle mr-2"></i> About InfoKeep</h2>
             <p class="has-text-grey">InfoKeep is your personal vault for bookmarks, notes, and collections. Minimal,
                 fast, and secure.</p>
@@ -738,5 +767,24 @@
         });
     }
     applyCustomOverrides();
+
+    function saveLandingPage() {
+        const page = document.getElementById('landing-page-select').value;
+        const formData = new FormData();
+        formData.append('page', page);
+        fetch('/settings/landing-page', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                const msg = document.getElementById('landing-page-msg');
+                msg.textContent = 'Default landing page saved!';
+                msg.className = 'help is-success';
+                setTimeout(() => msg.textContent = '', 3000);
+            })
+            .catch(() => {
+                const msg = document.getElementById('landing-page-msg');
+                msg.textContent = 'Failed to save.';
+                msg.className = 'help is-danger';
+            });
+    }
 </script>
 {{end}}

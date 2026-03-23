@@ -62,17 +62,17 @@
                     <div class="control is-flex is-align-items-center" style="gap: 0.5rem;">
                         <div id="color-swatches" class="is-flex" style="gap: 4px;">
                             <button class="button is-rounded p-0 color-swatch is-active" data-color="#3273dc"
-                                style="width: 28px; height: 28px; background: #3273dc; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                                style="width: 28px; height: 28px; background: #3273dc; border: 1px solid var(--border-color);"></button>
                             <button class="button is-rounded p-0 color-swatch" data-color="#48c774"
-                                style="width: 28px; height: 28px; background: #48c774; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                                style="width: 28px; height: 28px; background: #48c774; border: 1px solid var(--border-color);"></button>
                             <button class="button is-rounded p-0 color-swatch" data-color="#ffdd57"
-                                style="width: 28px; height: 28px; background: #ffdd57; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                                style="width: 28px; height: 28px; background: #ffdd57; border: 1px solid var(--border-color);"></button>
                             <button class="button is-rounded p-0 color-swatch" data-color="#f14668"
-                                style="width: 28px; height: 28px; background: #f14668; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                                style="width: 28px; height: 28px; background: #f14668; border: 1px solid var(--border-color);"></button>
                             <button class="button is-rounded p-0 color-swatch" data-color="#363636"
-                                style="width: 28px; height: 28px; background: #363636; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                                style="width: 28px; height: 28px; background: #363636; border: 1px solid var(--border-color);"></button>
                             <button class="button is-rounded p-0 color-swatch" data-color="#ffffff"
-                                style="width: 28px; height: 28px; background: #ffffff; border: 2px solid white; box-shadow: 0 0 0 1px #dbdbdb;"></button>
+                                style="width: 28px; height: 28px; background: #ffffff; border: 1px solid var(--border-color);"></button>
                         </div>
                         <input type="color" id="pen-color" value="#3273dc" class="input p-0"
                             style="width: 35px; height: 35px; border: none; cursor: pointer; background: transparent; vertical-align: middle;">
@@ -372,5 +372,15 @@
                 alert("Failed to load drawing for editing: " + err.message);
             });
     }
+    // Auto-open edit modal if URL has #drawing-{id} hash (from pinned items)
+    document.getElementById('main-search-target').addEventListener('htmx:afterSettle', function handler() {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#drawing-')) {
+            const id = hash.replace('#drawing-', '');
+            if (id) editDrawing(parseInt(id));
+            history.replaceState(null, '', window.location.pathname);
+        }
+        this.removeEventListener('htmx:afterSettle', handler);
+    });
 </script>
 {{end}}

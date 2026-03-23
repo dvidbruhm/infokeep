@@ -11,6 +11,10 @@
         </div>
         {{end}}
     </a>
+    <button class="button is-small is-white {{if .is_pinned}}has-text-warning{{else}}has-text-grey-light{{end}} p-0 h-auto mr-2 pin-btn"
+        onclick="togglePin({{.id}}, this)" title="{{if .is_pinned}}Unpin from dashboard{{else}}Pin to dashboard{{end}}">
+        <i class="fas fa-thumbtack"></i>
+    </button>
     <button class="button is-small is-white has-text-danger p-0 h-auto" hx-delete="/items/{{.id}}"
         hx-target="closest li" hx-confirm="Delete this entire list and all its tasks?" title="Delete List">
         <i class="fas fa-trash"></i>

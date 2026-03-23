@@ -116,7 +116,6 @@ select:focus {
 
 .tag-input-container:focus-within {
     border-color: #3273dc;
-    box-shadow: 0 0 0 2px rgba(50, 115, 220, 0.25);
 }
 
 .tag-entry {

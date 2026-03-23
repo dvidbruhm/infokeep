@@ -83,4 +83,94 @@
         </section>
     </div>
 </div>
+
+<!-- Edit Media Modal -->
+<div class="modal" id="edit-modal">
+    <div class="modal-background" onclick="closeEditModal()"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Image Details</p>
+            <button class="delete" aria-label="close" onclick="closeEditModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="has-text-centered mb-4">
+                <img id="edit-modal-image" src="" style="max-height: 400px; width: auto; max-width: 100%; border-radius: 4px; object-fit: contain;">
+            </div>
+            <form id="edit-form" hx-post="" hx-target="#main-search-target"
+                hx-on::after-request="closeEditModal(); this.reset()">
+                <div class="field">
+                    <label class="label">Title</label>
+                    <div class="control">
+                        <input class="input" type="text" name="title" id="edit-title-input" placeholder="Vacation Photo, Snapshot, etc." required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Tags</label>
+                    <div class="control">
+                        <div class="tag-input-container" id="edit-tags-container">
+                            <div class="tag-chips"></div>
+                            <input type="text" class="tag-entry" placeholder="photography, memories..."
+                                id="edit-tags-input-entry">
+                            <input type="hidden" name="tags" id="edit-tags-input">
+                            <div class="tag-suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="button" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="button is-link">Save Changes</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+<script>
+    function closeEditModal() {
+        document.getElementById('edit-modal').classList.remove('is-active');
+    }
+
+    function editMedia(id) {
+        fetch(`/media/${id}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(media => {
+                document.getElementById('edit-title-input').value = media.title;
+                document.getElementById('edit-modal-image').src = media.file_path;
+
+                // Populate tags
+                const tagsStr = media.tags ? media.tags.join(',') : '';
+                document.getElementById('edit-tags-input').value = tagsStr;
+
+                const container = document.getElementById('edit-tags-container');
+                if (container._tagInput) {
+                    container._tagInput.setTags(media.tags || []);
+                } else {
+                    container.dataset.existingTags = tagsStr;
+                    new TagInput(container);
+                }
+
+                const form = document.getElementById('edit-form');
+                form.setAttribute('hx-post', `/media/${id}`);
+                document.getElementById('edit-modal').classList.add('is-active');
+                htmx.process(form);
+            })
+            .catch(err => {
+                console.error("Error loading image details:", err);
+                alert("Failed to load image details for editing: " + err.message);
+            });
+    }
+    // Auto-open edit modal if URL has #media-{id} hash (from pinned items)
+    document.getElementById('main-search-target').addEventListener('htmx:afterSettle', function handler() {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#media-')) {
+            const id = hash.replace('#media-', '');
+            if (id) editMedia(parseInt(id));
+            history.replaceState(null, '', window.location.pathname);
+        }
+        this.removeEventListener('htmx:afterSettle', handler);
+    });
+</script>
 {{end}}

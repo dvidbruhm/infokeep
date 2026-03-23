@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"net/url"
 	"strings"
 	"time"
 
@@ -147,6 +148,7 @@ func createSchema() error {
 
 	CREATE TABLE IF NOT EXISTS reminders (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		item_id INTEGER UNIQUE,
 		user_id INTEGER NOT NULL,
 		name TEXT NOT NULL,
 		frequency TEXT NOT NULL,
@@ -156,7 +158,9 @@ func createSchema() error {
 		notification_type TEXT NOT NULL,
 		emails TEXT,
 		last_triggered_at DATETIME,
+		is_pinned INTEGER DEFAULT 0,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE CASCADE,
 		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 	);
 
@@ -176,23 +180,11 @@ func createSchema() error {
 	);
 	`
 	_, err := DB.Exec(schema)
-	// Handle migrations
-	_, _ = DB.Exec("ALTER TABLE bookmarks ADD COLUMN thumbnail TEXT")
-	_, _ = DB.Exec("ALTER TABLE recipes ADD COLUMN source_url TEXT")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN api_token TEXT")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN pcloud_access_token TEXT")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN pcloud_hostname TEXT")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN backup_interval_days INTEGER DEFAULT 7")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN last_backup_at DATETIME")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN gdrive_access_token TEXT")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN gdrive_refresh_token TEXT")
-	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN gdrive_folder_id TEXT")
-	_, _ = DB.Exec("ALTER TABLE rated_list_items ADD COLUMN image_path TEXT")
 	return err
 }
 
 func runMigrations() error {
-	// Check if user_id column exists in items table
+	// 1. Check if user_id column exists in items table
 	rows, err := DB.Query("PRAGMA table_info(items)")
 	if err != nil {
 		return err
@@ -200,6 +192,7 @@ func runMigrations() error {
 	defer rows.Close()
 
 	hasUserID := false
+	hasIsPinnedItem := false
 	for rows.Next() {
 		var cid int
 		var name string
@@ -212,7 +205,9 @@ func runMigrations() error {
 		}
 		if name == "user_id" {
 			hasUserID = true
-			break
+		}
+		if name == "is_pinned" {
+			hasIsPinnedItem = true
 		}
 	}
 
@@ -220,10 +215,9 @@ func runMigrations() error {
 		log.Println("Migrating database: Adding user_id column to items table")
 		_, err = DB.Exec("ALTER TABLE items ADD COLUMN user_id INTEGER")
 		if err != nil {
-			return err
+			log.Printf("Error adding user_id to items: %v", err)
 		}
-		// Optional: assign existing items to the first user if any exist
-		// This is a simple heuristic for single-user to multi-user migration
+		// assign existing items to the first user if any exist
 		var firstUserID int64
 		err = DB.QueryRow("SELECT id FROM users ORDER BY id ASC LIMIT 1").Scan(&firstUserID)
 		if err == nil {
@@ -231,6 +225,83 @@ func runMigrations() error {
 			DB.Exec("UPDATE items SET user_id = ? WHERE user_id IS NULL", firstUserID)
 		}
 	}
+
+	if !hasIsPinnedItem {
+		log.Println("Migrating database: Adding is_pinned column to items table")
+		_, err = DB.Exec("ALTER TABLE items ADD COLUMN is_pinned INTEGER DEFAULT 0")
+		if err != nil {
+			log.Printf("Error adding is_pinned to items: %v", err)
+		}
+	}
+
+	// 2. Check reminders table for item_id and is_pinned
+	rows, err = DB.Query("PRAGMA table_info(reminders)")
+	if err == nil {
+		defer rows.Close()
+		hasItemIDRem := false
+		hasIsPinnedRem := false
+		for rows.Next() {
+			var cid int
+			var name string
+			var dtype string
+			var notnull int
+			var dfltValue interface{}
+			var pk int
+			if err := rows.Scan(&cid, &name, &dtype, &notnull, &dfltValue, &pk); err == nil {
+				if name == "item_id" {
+					hasItemIDRem = true
+				}
+				if name == "is_pinned" {
+					hasIsPinnedRem = true
+				}
+			}
+		}
+		if !hasItemIDRem {
+			log.Println("Migrating database: Adding item_id column to reminders table")
+			_, err = DB.Exec("ALTER TABLE reminders ADD COLUMN item_id INTEGER")
+			if err != nil {
+				log.Printf("Error adding item_id to reminders: %v", err)
+			}
+		}
+		if !hasIsPinnedRem {
+			log.Println("Migrating database: Adding is_pinned column to reminders table")
+			_, err = DB.Exec("ALTER TABLE reminders ADD COLUMN is_pinned INTEGER DEFAULT 0")
+			if err != nil {
+				log.Printf("Error adding is_pinned to reminders: %v", err)
+			}
+		}
+	}
+
+	// 3. Migration loop for existing reminders to have an item_id
+	rows, err = DB.Query("SELECT id, user_id, name FROM reminders WHERE item_id IS NULL")
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var rid, uid int64
+			var name string
+			if err := rows.Scan(&rid, &uid, &name); err == nil {
+				res, err := DB.Exec("INSERT INTO items (user_id, title, type) VALUES (?, ?, ?)", uid, name, "reminder")
+				if err == nil {
+					itemID, _ := res.LastInsertId()
+					DB.Exec("UPDATE reminders SET item_id = ? WHERE id = ?", itemID, rid)
+				}
+			}
+		}
+	}
+
+	// 4. Other miscellaneous migrations (safe to run multiple times with _, _ =)
+	_, _ = DB.Exec("ALTER TABLE bookmarks ADD COLUMN thumbnail TEXT")
+	_, _ = DB.Exec("ALTER TABLE recipes ADD COLUMN source_url TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN api_token TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN pcloud_access_token TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN pcloud_hostname TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN backup_interval_days INTEGER DEFAULT 7")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN last_backup_at DATETIME")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN gdrive_access_token TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN gdrive_refresh_token TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN gdrive_folder_id TEXT")
+	_, _ = DB.Exec("ALTER TABLE rated_list_items ADD COLUMN image_path TEXT")
+	_, _ = DB.Exec("ALTER TABLE users ADD COLUMN default_page TEXT DEFAULT 'dashboard'")
 
 	return nil
 }
@@ -315,7 +386,7 @@ func CreateDrawing(userID int64, title, filePath string) (int64, error) {
 
 func GetDrawings(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at, d.file_path 
+		SELECT i.id, i.title, i.created_at, d.file_path, COALESCE(i.is_pinned, 0)
 		FROM items i 
 		JOIN drawings d ON i.id = d.item_id 
 		WHERE i.user_id = ?`
@@ -337,8 +408,9 @@ func GetDrawings(userID int64, tagFilter string) ([]map[string]interface{}, erro
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
+		var isPinned int
 		var title, createdAt, filePath sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt, &filePath); err != nil {
+		if err := rows.Scan(&id, &title, &createdAt, &filePath, &isPinned); err != nil {
 			return nil, err
 		}
 
@@ -349,6 +421,7 @@ func GetDrawings(userID int64, tagFilter string) ([]map[string]interface{}, erro
 			"created_at": createdAt.String,
 			"file_path":  filePath.String,
 			"tags":       tags,
+			"is_pinned":  isPinned == 1,
 		})
 	}
 	return results, nil
@@ -429,7 +502,7 @@ func CreateBookmark(userID int64, title, url, description, favicon, thumbnail st
 
 func GetBookmarks(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at, b.url, b.description, b.favicon, b.thumbnail 
+		SELECT i.id, i.title, i.created_at, b.url, b.description, b.favicon, b.thumbnail, COALESCE(i.is_pinned, 0)
 		FROM items i 
 		JOIN bookmarks b ON i.id = b.item_id 
 		WHERE i.user_id = ?`
@@ -451,9 +524,18 @@ func GetBookmarks(userID int64, tagFilter string) ([]map[string]interface{}, err
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
-		var title, createdAt, url, description, favicon, thumbnail sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt, &url, &description, &favicon, &thumbnail); err != nil {
+		var isPinned int
+		var title, createdAt, rawURL, description, favicon, thumbnail sql.NullString
+		if err := rows.Scan(&id, &title, &createdAt, &rawURL, &description, &favicon, &thumbnail, &isPinned); err != nil {
 			return nil, err
+		}
+
+		// Auto-generate favicon URL from domain if not stored
+		faviconURL := favicon.String
+		if faviconURL == "" && rawURL.String != "" {
+			if domain := extractDomain(rawURL.String); domain != "" {
+				faviconURL = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=32"
+			}
 		}
 
 		tags, _ := GetItemTags(id)
@@ -461,14 +543,24 @@ func GetBookmarks(userID int64, tagFilter string) ([]map[string]interface{}, err
 			"id":          id,
 			"title":       title.String,
 			"created_at":  createdAt.String,
-			"url":         url.String,
+			"url":         rawURL.String,
 			"description": description.String,
-			"favicon":     favicon.String,
+			"favicon":     faviconURL,
 			"thumbnail":   thumbnail.String,
 			"tags":        tags,
+			"is_pinned":   isPinned == 1,
 		})
 	}
 	return results, nil
+}
+
+// extractDomain parses a raw URL and returns just the host (e.g. "github.com").
+func extractDomain(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil || u.Host == "" {
+		return ""
+	}
+	return u.Host
 }
 
 func GetBookmark(userID int64, id int64) (map[string]interface{}, error) {
@@ -544,7 +636,7 @@ func CreateNote(userID int64, title, content string) (int64, error) {
 
 func GetNotes(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at, n.content 
+		SELECT i.id, i.title, i.created_at, n.content, COALESCE(i.is_pinned, 0)
 		FROM items i 
 		JOIN notes n ON i.id = n.item_id 
 		WHERE i.user_id = ?`
@@ -566,8 +658,9 @@ func GetNotes(userID int64, tagFilter string) ([]map[string]interface{}, error) 
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
+		var isPinned int
 		var title, createdAt, content sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt, &content); err != nil {
+		if err := rows.Scan(&id, &title, &createdAt, &content, &isPinned); err != nil {
 			return nil, err
 		}
 
@@ -578,6 +671,7 @@ func GetNotes(userID int64, tagFilter string) ([]map[string]interface{}, error) 
 			"created_at": createdAt.String,
 			"content":    content.String,
 			"tags":       tags,
+			"is_pinned":  isPinned == 1,
 		})
 	}
 	return results, nil
@@ -650,7 +744,7 @@ func GetRatedList(userID int64, id int64) (map[string]interface{}, error) {
 
 func GetRatedLists(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at 
+		SELECT i.id, i.title, i.created_at, COALESCE(i.is_pinned, 0)
 		FROM items i 
 		WHERE i.type = 'rated_list' AND i.user_id = ?`
 	args := []interface{}{userID}
@@ -671,8 +765,9 @@ func GetRatedLists(userID int64, tagFilter string) ([]map[string]interface{}, er
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
+		var isPinned int
 		var title, createdAt sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt); err != nil {
+		if err := rows.Scan(&id, &title, &createdAt, &isPinned); err != nil {
 			return nil, err
 		}
 		tags, _ := GetItemTags(id)
@@ -681,6 +776,7 @@ func GetRatedLists(userID int64, tagFilter string) ([]map[string]interface{}, er
 			"title":      title.String,
 			"created_at": createdAt.String,
 			"tags":       tags,
+			"is_pinned":  isPinned == 1,
 		})
 	}
 	return results, nil
@@ -760,7 +856,7 @@ func CreateList(userID int64, title string) (int64, error) {
 
 func GetLists(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at 
+		SELECT i.id, i.title, i.created_at, COALESCE(i.is_pinned, 0)
 		FROM items i 
 		WHERE i.type = 'list' AND i.user_id = ?`
 	args := []interface{}{userID}
@@ -781,8 +877,9 @@ func GetLists(userID int64, tagFilter string) ([]map[string]interface{}, error) 
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
+		var isPinned int
 		var title, createdAt sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt); err != nil {
+		if err := rows.Scan(&id, &title, &createdAt, &isPinned); err != nil {
 			return nil, err
 		}
 
@@ -792,6 +889,7 @@ func GetLists(userID int64, tagFilter string) ([]map[string]interface{}, error) 
 			"title":      title.String,
 			"created_at": createdAt.String,
 			"tags":       tags,
+			"is_pinned":  isPinned == 1,
 		})
 	}
 	return results, nil
@@ -878,7 +976,7 @@ func CreateMedia(userID int64, title, filePath, mimeType string) (int64, error) 
 
 func GetMedia(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at, m.file_path, m.mime_type
+		SELECT i.id, i.title, i.created_at, m.file_path, m.mime_type, COALESCE(i.is_pinned, 0)
 		FROM items i
 		JOIN media m ON i.id = m.item_id 
 		WHERE i.user_id = ?`
@@ -900,8 +998,9 @@ func GetMedia(userID int64, tagFilter string) ([]map[string]interface{}, error) 
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
+		var isPinned int
 		var title, createdAt, filePath, mimeType sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt, &filePath, &mimeType); err != nil {
+		if err := rows.Scan(&id, &title, &createdAt, &filePath, &mimeType, &isPinned); err != nil {
 			return nil, err
 		}
 		tags, _ := GetItemTags(id)
@@ -912,9 +1011,42 @@ func GetMedia(userID int64, tagFilter string) ([]map[string]interface{}, error) 
 			"file_path":  filePath.String,
 			"mime_type":  mimeType.String,
 			"tags":       tags,
+			"is_pinned":  isPinned == 1,
 		})
 	}
 	return results, nil
+}
+
+func GetMediaItem(id int64, userID int64) (map[string]interface{}, error) {
+	query := `
+		SELECT i.id, i.title, i.created_at, m.file_path, m.mime_type
+		FROM items i
+		JOIN media m ON i.id = m.item_id 
+		WHERE i.id = ? AND i.user_id = ?`
+
+	var title, createdAt, filePath, mimeType sql.NullString
+	err := DB.QueryRow(query, id, userID).Scan(&id, &title, &createdAt, &filePath, &mimeType)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("media not found")
+		}
+		return nil, err
+	}
+	
+	tags, _ := GetItemTags(id)
+	return map[string]interface{}{
+		"id":         id,
+		"title":      title.String,
+		"created_at": createdAt.String,
+		"file_path":  filePath.String,
+		"mime_type":  mimeType.String,
+		"tags":       tags,
+	}, nil
+}
+
+func UpdateMediaItem(id int64, userID int64, title string) error {
+	_, err := DB.Exec("UPDATE items SET title = ? WHERE id = ? AND user_id = ?", title, id, userID)
+	return err
 }
 
 // Global Deletion
@@ -1085,7 +1217,7 @@ func CreateRecipe(userID int64, title, ingredients, instructions, notes, thumbna
 
 func GetRecipes(userID int64, tagFilter string) ([]map[string]interface{}, error) {
 	query := `
-		SELECT i.id, i.title, i.created_at, r.ingredients, r.instructions, r.notes, r.thumbnail, r.source_url 
+		SELECT i.id, i.title, i.created_at, r.ingredients, r.instructions, r.notes, r.thumbnail, r.source_url, COALESCE(i.is_pinned, 0)
 		FROM items i 
 		JOIN recipes r ON i.id = r.item_id 
 		WHERE i.user_id = ?`
@@ -1107,8 +1239,9 @@ func GetRecipes(userID int64, tagFilter string) ([]map[string]interface{}, error
 	var results []map[string]interface{}
 	for rows.Next() {
 		var id int64
+		var isPinned int
 		var title, createdAt, ingredients, instructions, notes, thumbnail, sourceURL sql.NullString
-		if err := rows.Scan(&id, &title, &createdAt, &ingredients, &instructions, &notes, &thumbnail, &sourceURL); err != nil {
+		if err := rows.Scan(&id, &title, &createdAt, &ingredients, &instructions, &notes, &thumbnail, &sourceURL, &isPinned); err != nil {
 			return nil, err
 		}
 
@@ -1123,6 +1256,7 @@ func GetRecipes(userID int64, tagFilter string) ([]map[string]interface{}, error
 			"thumbnail":    thumbnail.String,
 			"source_url":   sourceURL.String,
 			"tags":         tags,
+			"is_pinned":    isPinned == 1,
 		})
 	}
 	return results, nil
@@ -1435,6 +1569,7 @@ func GetAllUsersWithGDrive() ([]UserGDriveBackupInfo, error) {
 
 type Reminder struct {
 	ID               int64          `json:"id"`
+	ItemID           sql.NullInt64  `json:"item_id"`
 	UserID           int64          `json:"user_id"`
 	Name             string         `json:"name"`
 	Frequency        string         `json:"frequency"` // Once, Daily, Weekly, Monthly, Yearly
@@ -1444,6 +1579,7 @@ type Reminder struct {
 	NotificationType string         `json:"notification_type"` // notification_only, email, or both
 	Emails           sql.NullString `json:"emails"`            // comma-separated
 	LastTriggeredAt  sql.NullString `json:"last_triggered_at"`
+	IsPinned         bool           `json:"is_pinned"`
 	CreatedAt        string         `json:"created_at"`
 }
 
@@ -1457,19 +1593,39 @@ type PushSubscription struct {
 }
 
 func CreateReminder(r *Reminder) (int64, error) {
-	result, err := DB.Exec(`
-		INSERT INTO reminders (user_id, name, frequency, time_of_day, start_date, end_date, notification_type, emails)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, r.UserID, r.Name, r.Frequency, r.TimeOfDay, r.StartDate, r.EndDate, r.NotificationType, r.Emails)
+	tx, err := DB.Begin()
 	if err != nil {
 		return 0, err
 	}
-	return result.LastInsertId()
+	defer tx.Rollback()
+
+	// Create generic item first
+	result, err := tx.Exec(`
+		INSERT INTO items (user_id, title, type) VALUES (?, ?, 'reminder')
+	`, r.UserID, r.Name)
+	if err != nil {
+		return 0, err
+	}
+	itemID, _ := result.LastInsertId()
+
+	res, err := tx.Exec(`
+		INSERT INTO reminders (item_id, user_id, name, frequency, time_of_day, start_date, end_date, notification_type, emails)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, itemID, r.UserID, r.Name, r.Frequency, r.TimeOfDay, r.StartDate, r.EndDate, r.NotificationType, r.Emails)
+	if err != nil {
+		return 0, err
+	}
+	rid, _ := res.LastInsertId()
+
+	if err = tx.Commit(); err != nil {
+		return 0, err
+	}
+	return rid, nil
 }
 
 func GetRemindersForUser(userID int64) ([]Reminder, error) {
 	rows, err := DB.Query(`
-		SELECT id, user_id, name, frequency, time_of_day, start_date, end_date, notification_type, emails, last_triggered_at, created_at
+		SELECT id, item_id, user_id, name, frequency, time_of_day, start_date, end_date, notification_type, emails, last_triggered_at, COALESCE(is_pinned, 0), created_at
 		FROM reminders
 		WHERE user_id = ?
 		ORDER BY created_at DESC
@@ -1482,12 +1638,14 @@ func GetRemindersForUser(userID int64) ([]Reminder, error) {
 	var results []Reminder
 	for rows.Next() {
 		var r Reminder
+		var isPinned int
 		if err := rows.Scan(
-			&r.ID, &r.UserID, &r.Name, &r.Frequency, &r.TimeOfDay, &r.StartDate,
-			&r.EndDate, &r.NotificationType, &r.Emails, &r.LastTriggeredAt, &r.CreatedAt,
+			&r.ID, &r.ItemID, &r.UserID, &r.Name, &r.Frequency, &r.TimeOfDay, &r.StartDate,
+			&r.EndDate, &r.NotificationType, &r.Emails, &r.LastTriggeredAt, &isPinned, &r.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
+		r.IsPinned = (isPinned == 1)
 		results = append(results, r)
 	}
 	return results, nil
@@ -1497,7 +1655,7 @@ func GetDueReminders() ([]Reminder, error) {
 	// This function fetches all active reminders. We will filter the actual "is it due right now" logic in the worker.
 	// For efficiency, we exclude logically completed "Once" reminders if they have been triggered.
 	rows, err := DB.Query(`
-		SELECT id, user_id, name, frequency, time_of_day, start_date, end_date, notification_type, emails, last_triggered_at, created_at
+		SELECT id, item_id, user_id, name, frequency, time_of_day, start_date, end_date, notification_type, emails, last_triggered_at, COALESCE(is_pinned, 0), created_at
 		FROM reminders
 		WHERE (frequency != 'Once') OR (frequency = 'Once' AND last_triggered_at IS NULL)
 	`)
@@ -1509,12 +1667,14 @@ func GetDueReminders() ([]Reminder, error) {
 	var results []Reminder
 	for rows.Next() {
 		var r Reminder
+		var isPinned int
 		if err := rows.Scan(
-			&r.ID, &r.UserID, &r.Name, &r.Frequency, &r.TimeOfDay, &r.StartDate,
-			&r.EndDate, &r.NotificationType, &r.Emails, &r.LastTriggeredAt, &r.CreatedAt,
+			&r.ID, &r.ItemID, &r.UserID, &r.Name, &r.Frequency, &r.TimeOfDay, &r.StartDate,
+			&r.EndDate, &r.NotificationType, &r.Emails, &r.LastTriggeredAt, &isPinned, &r.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
+		r.IsPinned = (isPinned == 1)
 		results = append(results, r)
 	}
 	return results, nil
@@ -1526,7 +1686,13 @@ func MarkReminderTriggered(id int64, t time.Time) error {
 }
 
 func DeleteReminder(id int64, userID int64) error {
-	_, err := DB.Exec("DELETE FROM reminders WHERE id = ? AND user_id = ?", id, userID)
+	// Fetch item_id first
+	var itemID int64
+	err := DB.QueryRow("SELECT item_id FROM reminders WHERE id = ? AND user_id = ?", id, userID).Scan(&itemID)
+	if err == nil && itemID > 0 {
+		DeleteItem(userID, itemID)
+	}
+	_, err = DB.Exec("DELETE FROM reminders WHERE id = ? AND user_id = ?", id, userID)
 	return err
 }
 
@@ -1618,4 +1784,98 @@ func DeleteSharedLink(hash string, userID int64) error {
 	// Require userID to ensure only the owner can revoke it
 	_, err := DB.Exec("DELETE FROM shared_links WHERE link_hash = ? AND user_id = ?", hash, userID)
 	return err
+}
+
+// GetDefaultPage returns the user's configured default landing page (e.g., "dashboard", "bookmarks").
+// Falls back to "dashboard" if not set.
+func GetDefaultPage(userID int64) string {
+	var page string
+	err := DB.QueryRow("SELECT COALESCE(default_page, 'dashboard') FROM users WHERE id = ?", userID).Scan(&page)
+	if err != nil || page == "" {
+		return "dashboard"
+	}
+	return page
+}
+
+// SetDefaultPage updates the user's default landing page preference.
+func SetDefaultPage(userID int64, page string) error {
+	_, err := DB.Exec("UPDATE users SET default_page = ? WHERE id = ?", page, userID)
+	return err
+}
+
+// GetPinnedItems returns all pinned items for a user across all types.
+// Each result has: id, type, title, url (for bookmarks), thumbnail, favicon.
+func GetPinnedItems(userID int64) ([]map[string]interface{}, error) {
+	rows, err := DB.Query(`
+		SELECT i.id, i.type, i.title,
+			COALESCE(b.url, ''),
+			COALESCE(b.thumbnail, r.thumbnail, d.file_path, m.file_path, ''),
+			COALESCE(b.favicon, '')
+		FROM items i
+		LEFT JOIN bookmarks b ON i.id = b.item_id
+		LEFT JOIN recipes r ON i.id = r.item_id
+		LEFT JOIN drawings d ON i.id = d.item_id
+		LEFT JOIN media m ON i.id = m.item_id
+		WHERE i.user_id = ? AND i.is_pinned = 1
+		ORDER BY i.updated_at DESC
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []map[string]interface{}
+	for rows.Next() {
+		var id int64
+		var itemType, title, rawURL, thumbnail, favicon string
+		if err := rows.Scan(&id, &itemType, &title, &rawURL, &thumbnail, &favicon); err != nil {
+			return nil, err
+		}
+		// Generate favicon if missing
+		if favicon == "" && rawURL != "" {
+			if domain := extractDomain(rawURL); domain != "" {
+				favicon = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=32"
+			}
+		}
+		tags, _ := GetItemTags(id)
+		results = append(results, map[string]interface{}{
+			"id":        id,
+			"type":      itemType,
+			"title":     title,
+			"url":       rawURL,
+			"thumbnail": thumbnail,
+			"favicon":   favicon,
+			"tags":      tags,
+		})
+	}
+	return results, nil
+}
+
+// TogglePinItem flips the is_pinned flag for an item owned by the user.
+// Returns the new pinned state (true = now pinned).
+func TogglePinItem(itemID, userID int64) (bool, error) {
+	// Check items table first
+	var current int
+	err := DB.QueryRow("SELECT COALESCE(is_pinned, 0) FROM items WHERE id = ? AND user_id = ?", itemID, userID).Scan(&current)
+	if err == nil {
+		newVal := 0
+		if current == 0 {
+			newVal = 1
+		}
+		_, err = DB.Exec("UPDATE items SET is_pinned = ? WHERE id = ? AND user_id = ?", newVal, itemID, userID)
+		return newVal == 1, err
+	}
+
+	// If not in items, check reminders table
+	err = DB.QueryRow("SELECT COALESCE(is_pinned, 0) FROM reminders WHERE id = ? AND user_id = ?", itemID, userID).Scan(&current)
+	if err == nil {
+		newVal := 0
+		if current == 0 {
+			newVal = 1
+		}
+		_, err = DB.Exec("UPDATE reminders SET is_pinned = ? WHERE id = ? AND user_id = ?", newVal, itemID, userID)
+		return newVal == 1, err
+	}
+
+	return false, err
 }

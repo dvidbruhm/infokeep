@@ -18,11 +18,17 @@
         {{end}}
         <div class="card-content p-4">
             <div class="content">
-                <p class="title is-6 mb-2 is-truncated-2" title="{{.title}}">
-                    <a href="{{.url}}" target="_blank" class="has-text-dark">
-                        {{.title}}
-                    </a>
-                </p>
+                <div class="is-flex is-align-items-center mb-2">
+                    {{if .favicon}}
+                    <img src="{{.favicon}}" class="mr-2" style="width: 16px; height: 16px; flex-shrink: 0;"
+                        onerror="this.style.display='none'">
+                    {{else}}
+                    <i class="fas fa-globe has-text-grey-light mr-2" style="font-size: 0.9rem;"></i>
+                    {{end}}
+                    <p class="title is-6 mb-0 is-truncated-2" title="{{.title}}" style="min-width:0;">
+                        <a href="{{.url}}" target="_blank" class="has-text-dark">{{.title}}</a>
+                    </p>
+                </div>
                 <p class="subtitle is-7 has-text-grey mb-3 is-truncated" title="{{.url}}">{{.url}}</p>
                 {{if .description}}
                 <div class="is-size-7 has-text-grey-darker is-truncated-3 mb-3">
@@ -43,6 +49,13 @@
                     <i class="fas fa-clock mr-1"></i> {{.created_at}}
                 </p>
                 <div class="card-actions">
+                    <button class="button is-small p-1 mr-1 pin-btn {{if .is_pinned}}is-warning{{else}}is-white has-text-warning{{end}}"
+                        id="pin-btn-{{.id}}"
+                        data-pinned="{{if .is_pinned}}true{{else}}false{{end}}"
+                        onclick="event.preventDefault(); event.stopPropagation(); togglePin({{.id}}, this, false, 'bookmark', '{{js .title}}', '{{js .url}}')"
+                        title="{{if .is_pinned}}Unpin from dashboard{{else}}Pin to dashboard{{end}}">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
                     <button class="button is-small is-white has-text-grey-dark p-1 mr-1"
                         onclick="openShareModal('bookmark', {{.id}})" title="Share">
                         <i class="fas fa-share-nodes"></i>
@@ -61,6 +74,7 @@
         </div>
     </div>
 </div>
+
 {{else}}
 <div class="column is-12 has-text-centered py-6">
     <div class="box has-background-light">

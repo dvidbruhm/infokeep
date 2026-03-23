@@ -59,7 +59,9 @@ func main() {
 		r.Use(handlers.AuthMiddleware)
 
 		r.Get("/", handlers.IndexHandler)
+		r.Get("/dashboard", handlers.DashboardHandler)
 		r.Get("/share", handlers.ShareHandler)
+		r.Post("/items/{id}/pin", handlers.TogglePinHandler)
 		r.Get("/bookmarks", handlers.BookmarkHandler)
 		r.Post("/bookmarks", handlers.BookmarkHandler)
 		r.Get("/bookmarks/{id}", handlers.GetBookmarkHandler)
@@ -87,6 +89,8 @@ func main() {
 		r.Post("/list-items/{itemID}/toggle", handlers.ToggleListItemHandler)
 		r.Get("/media", handlers.MediaHandler)
 		r.Post("/media", handlers.MediaHandler)
+		r.Get("/media/{id}", handlers.GetMediaItemHandler)
+		r.Post("/media/{id}", handlers.UpdateMediaItemHandler)
 		r.Get("/recipes", handlers.RecipeHandler)
 		r.Post("/recipes", handlers.CreateRecipeHandler)
 		r.Get("/recipes/import", handlers.ImportRecipeHandler)
@@ -94,12 +98,14 @@ func main() {
 		r.Get("/recipes/{id}", handlers.GetRecipeHandler)
 		r.Post("/recipes/{id}", handlers.UpdateRecipeHandler)
 		r.Get("/search", handlers.SearchHandler)
+		r.Get("/search/suggestions", handlers.SearchSuggestionsHandler)
 		r.Get("/tags/suggestions", handlers.TagSuggestionsHandler)
 
 		// Settings Routes
 		r.Get("/settings", handlers.SettingsHandler)
 		r.Post("/settings/import", handlers.ImportDataHandler)
 		r.Get("/settings/export", handlers.ExportDataHandler)
+		r.Post("/settings/landing-page", handlers.SetLandingPageHandler)
 
 		// pCloud Routes
 		r.Get("/settings/pcloud/link", handlers.PCloudLinkHandler)

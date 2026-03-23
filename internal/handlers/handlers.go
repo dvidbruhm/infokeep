@@ -129,7 +129,7 @@ func RenderFragment(w http.ResponseWriter, tmpl string, data interface{}) {
 	}
 }
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	tagFilter := r.URL.Query().Get("tag")
 	bookmarks, _ := database.GetBookmarks(userID, tagFilter)
@@ -140,6 +140,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	media, _ := database.GetMedia(userID, tagFilter)
 	recipes, _ := database.GetRecipes(userID, tagFilter)
 	tags, _ := database.GetTagsWithCounts(userID)
+	pinned, _ := database.GetPinnedItems(userID)
 
 	data := map[string]interface{}{
 		"Bookmarks":  bookmarks,
@@ -151,9 +152,51 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		"Recipes":    recipes,
 		"Tags":       tags,
 		"ActiveTag":  tagFilter,
+		"Pinned":     pinned,
 	}
 	RenderTemplate(w, "index.html", data)
 }
+
+func TogglePinHandler(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	itemIDStr := chi.URLParam(r, "id")
+	var itemID int64
+	fmt.Sscanf(itemIDStr, "%d", &itemID)
+
+	pinned, err := database.TogglePinItem(itemID, userID)
+	if err != nil {
+		http.Error(w, "failed to toggle pin", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"pinned": pinned})
+}
+
+
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+
+	// Check user's preferred landing page and redirect accordingly
+	defaultPage := database.GetDefaultPage(userID)
+	pageRoutes := map[string]string{
+		"bookmarks":   "/bookmarks",
+		"notes":       "/notes",
+		"recipes":     "/recipes",
+		"media":       "/media",
+		"lists":       "/lists",
+		"rated-lists": "/rated-lists",
+		"drawings":    "/drawings",
+		"reminders":   "/reminders",
+		"settings":    "/settings",
+	}
+	if route, ok := pageRoutes[defaultPage]; ok {
+		http.Redirect(w, r, route, http.StatusFound)
+		return
+	}
+	// Default or "dashboard" — render the dashboard directly
+	DashboardHandler(w, r)
+}
+
 
 func fetchThumbnail(targetURL string) string {
 	client := &http.Client{
@@ -738,6 +781,58 @@ func MediaHandler(w http.ResponseWriter, r *http.Request) {
 	RenderTemplate(w, "media.html", data)
 }
 
+func GetMediaItemHandler(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	item, err := database.GetMediaItem(id, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(item)
+}
+
+func UpdateMediaItemHandler(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	title := r.FormValue("title")
+	err = database.UpdateMediaItem(id, userID, title)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tags := parseTags(r.FormValue("tags"))
+	database.SetItemTags(id, tags)
+
+	if r.Header.Get("HX-Request") != "" {
+		tagFilter := r.URL.Query().Get("tag")
+		media, _ := database.GetMedia(userID, tagFilter)
+		RenderFragment(w, "media_grid.html", media)
+		return
+	}
+	http.Redirect(w, r, "/media", http.StatusSeeOther)
+}
+
 func DrawingsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	tagFilter := r.URL.Query().Get("tag")
@@ -900,6 +995,8 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	// Google Drive status
 	_, gdriveRefresh, _ := database.GetGDriveCredentials(userID)
 
+	defaultPage := database.GetDefaultPage(userID)
+
 	RenderTemplate(w, "settings.html", map[string]interface{}{
 		"APIToken":       token,
 		"PCloudLinked":   pcloudToken != "",
@@ -908,8 +1005,35 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 		"PCloudMsg":      r.URL.Query().Get("pcloud"),
 		"GDriveLinked":   gdriveRefresh != "",
 		"GDriveMsg":      r.URL.Query().Get("gdrive"),
+		"DefaultPage":    defaultPage,
 	})
 }
+
+func SetLandingPageHandler(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	// r.FormValue handles both multipart/form-data and application/x-www-form-urlencoded
+	if err := r.ParseMultipartForm(1024); err != nil {
+		// Fall back to URL-encoded form if not multipart
+		r.ParseForm()
+	}
+	page := r.FormValue("page")
+	// Validate against known pages
+	validPages := map[string]bool{
+		"dashboard": true, "bookmarks": true, "notes": true, "recipes": true,
+		"media": true, "lists": true, "rated-lists": true, "drawings": true,
+		"reminders": true, "settings": true,
+	}
+	if !validPages[page] {
+		page = "dashboard"
+	}
+	if err := database.SetDefaultPage(userID, page); err != nil {
+		http.Error(w, "failed to save", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"page": page})
+}
+
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -1253,61 +1377,284 @@ func ShareImportRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/recipes/%d", itemID), http.StatusFound)
 }
 
+// GlobalSearchResult represents a unified item found across any category
+type GlobalSearchResult struct {
+	ID        int64
+	Type      string
+	Title     string
+	Snippet   string
+	Thumbnail string
+	URL       string
+	Tags      []string
+	Score     int
+	CreatedAt string
+	Link      string
+}
+
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 	query := strings.ToLower(r.URL.Query().Get("q"))
 	category := r.URL.Query().Get("category")
 
+	// If there's a search term, do a global unified search
+	if query != "" {
+		results := performGlobalSearch(userID, query)
+		RenderFragment(w, "global_search_results.html", map[string]interface{}{
+			"Results": results,
+			"Query":   query,
+		})
+		return
+	}
+
+	// If there's NO search term (user cleared the bar), fallback to rendering the raw list for the current category page
 	switch category {
 	case "bookmarks":
 		items, _ := database.GetBookmarks(userID, "")
-		filtered := filterAndSort(items, query, []string{"title", "url", "description"})
-		RenderFragment(w, "bookmark_list.html", filtered)
+		RenderFragment(w, "bookmark_list.html", items)
 	case "notes":
 		items, _ := database.GetNotes(userID, "")
-		filtered := filterAndSort(items, query, []string{"title", "content"})
-		RenderFragment(w, "note_list.html", filtered)
+		RenderFragment(w, "note_list.html", items)
 	case "drawings":
 		items, _ := database.GetDrawings(userID, "")
-		filtered := filterAndSort(items, query, []string{"title"})
-		RenderFragment(w, "drawing_list.html", filtered)
+		RenderFragment(w, "drawing_list.html", items)
 	case "rated-lists":
 		items, _ := database.GetRatedLists(userID, "")
-		filtered := filterAndSort(items, query, []string{"title"})
-		RenderFragment(w, "rated_list_nav.html", filtered)
+		RenderFragment(w, "rated_list_nav.html", items)
 	case "lists":
 		items, _ := database.GetLists(userID, "")
-		filtered := filterAndSort(items, query, []string{"title"})
-		RenderFragment(w, "list_nav.html", filtered)
+		RenderFragment(w, "list_nav.html", items)
 	case "media":
 		items, _ := database.GetMedia(userID, "")
-		filtered := filterAndSort(items, query, []string{"title"})
-		RenderFragment(w, "media_grid.html", filtered)
+		RenderFragment(w, "media_grid.html", items)
 	case "recipes":
 		items, _ := database.GetRecipes(userID, "")
-		filtered := filterAndSort(items, query, []string{"title", "ingredients", "instructions"})
-		RenderFragment(w, "recipe_list.html", filtered)
+		RenderFragment(w, "recipe_list.html", items)
 	case "dashboard":
-		bookmarks, _ := database.GetBookmarks(userID, "")
-		notes, _ := database.GetNotes(userID, "")
-		drawings, _ := database.GetDrawings(userID, "")
-		ratedLists, _ := database.GetRatedLists(userID, "")
-		checklists, _ := database.GetLists(userID, "")
-		recipes, _ := database.GetRecipes(userID, "")
-
-		data := map[string]interface{}{
-			"Bookmarks":  filterAndSort(bookmarks, query, []string{"title", "url", "description"}),
-			"Notes":      filterAndSort(notes, query, []string{"title", "content"}),
-			"Drawings":   filterAndSort(drawings, query, []string{"title"}),
-			"RatedLists": filterAndSort(ratedLists, query, []string{"title"}),
-			"Checklists": filterAndSort(checklists, query, []string{"title"}),
-			"Recipes":    filterAndSort(recipes, query, []string{"title", "ingredients", "instructions"}),
-		}
-		RenderFragment(w, "search_results.html", data)
+		// Clear dashboard search (could render empty state or partial dashboard depending on design)
+		RenderFragment(w, "search_results.html", map[string]interface{}{})
 	default:
-		// Generic cross-category search for dashboard or undefined
 		w.WriteHeader(http.StatusNoContent)
 	}
+}
+
+func performGlobalSearch(userID int64, query string) []GlobalSearchResult {
+	var globalResults []GlobalSearchResult
+
+	// Helper to safely extract string map values
+	getString := func(m map[string]interface{}, key string) string {
+		if val, ok := m[key].(string); ok {
+			return val
+		}
+		return ""
+	}
+	getInt64 := func(m map[string]interface{}, key string) int64 {
+		if val, ok := m[key].(int64); ok {
+			return val
+		}
+		// In case row returns int or float64 via JSON mapping
+		if val, ok := m[key].(float64); ok {
+			return int64(val)
+		}
+		if val, ok := m[key].(int); ok {
+			return int64(val)
+		}
+		return 0
+	}
+	getTags := func(m map[string]interface{}) []string {
+		if tags, ok := m["tags"].([]string); ok {
+			return tags
+		}
+		return nil
+	}
+	truncate := func(s string, l int) string {
+		if len(s) > l {
+			return s[:l] + "..."
+		}
+		return s
+	}
+
+	scoreItem := func(title, content, url string, tags []string) int {
+		score := 0
+		if strings.Contains(strings.ToLower(title), query) {
+			score += 10
+			if strings.HasPrefix(strings.ToLower(title), query) {
+				score += 10
+			}
+		}
+		if strings.Contains(strings.ToLower(content), query) {
+			score += 5
+		}
+		if url != "" && strings.Contains(strings.ToLower(url), query) {
+			score += 5
+		}
+		for _, t := range tags {
+			if strings.Contains(strings.ToLower(t), query) {
+				score += 15
+				if strings.HasPrefix(strings.ToLower(t), query) {
+					score += 15
+				}
+			}
+		}
+		return score
+	}
+
+	// 1. Notes
+	notes, _ := database.GetNotes(userID, "")
+	for _, n := range notes {
+		title := getString(n, "title")
+		content := getString(n, "content")
+		tags := getTags(n)
+		score := scoreItem(title, content, "", tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(n, "id"),
+				Type:      "Note",
+				Title:     title,
+				Snippet:   truncate(content, 150),
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(n, "created_at"),
+				Link:      fmt.Sprintf("/notes#note-%d", getInt64(n, "id")),
+			})
+		}
+	}
+
+	// 2. Bookmarks
+	bookmarks, _ := database.GetBookmarks(userID, "")
+	for _, b := range bookmarks {
+		title := getString(b, "title")
+		url := getString(b, "url")
+		desc := getString(b, "description")
+		tags := getTags(b)
+		score := scoreItem(title, desc, url, tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(b, "id"),
+				Type:      "Bookmark",
+				Title:     title,
+				Thumbnail: getString(b, "thumbnail"), // Can also use favicon
+				URL:       url,
+				Snippet:   truncate(desc, 150),
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(b, "created_at"),
+				Link:      fmt.Sprintf("/bookmarks#bookmark-%d", getInt64(b, "id")),
+			})
+		}
+	}
+
+	// 3. Recipes
+	recipes, _ := database.GetRecipes(userID, "")
+	for _, r := range recipes {
+		title := getString(r, "title")
+		ing := getString(r, "ingredients")
+		inst := getString(r, "instructions")
+		tags := getTags(r)
+		score := scoreItem(title, ing+" "+inst, "", tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(r, "id"),
+				Type:      "Recipe",
+				Title:     title,
+				Thumbnail: getString(r, "thumbnail"),
+				Snippet:   truncate(inst, 150),
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(r, "created_at"),
+				Link:      fmt.Sprintf("/recipes/%d", getInt64(r, "id")),
+			})
+		}
+	}
+
+	// 4. Checklists
+	lists, _ := database.GetLists(userID, "")
+	for _, l := range lists {
+		title := getString(l, "title")
+		tags := getTags(l)
+		// Assuming lists items are joined or searchable in another way, but for now just title/tags
+		score := scoreItem(title, "", "", tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(l, "id"),
+				Type:      "Checklist",
+				Title:     title,
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(l, "created_at"),
+				Link:      fmt.Sprintf("/lists?id=%d", getInt64(l, "id")),
+			})
+		}
+	}
+
+	// 5. Rated Lists
+	rated, _ := database.GetRatedLists(userID, "")
+	for _, r := range rated {
+		title := getString(r, "title")
+		tags := getTags(r)
+		score := scoreItem(title, "", "", tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(r, "id"),
+				Type:      "Rated List",
+				Title:     title,
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(r, "created_at"),
+				Link:      fmt.Sprintf("/rated-lists?id=%d", getInt64(r, "id")),
+			})
+		}
+	}
+
+	// 6. Drawings
+	drawings, _ := database.GetDrawings(userID, "")
+	for _, d := range drawings {
+		title := getString(d, "title")
+		tags := getTags(d)
+		score := scoreItem(title, "", "", tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(d, "id"),
+				Type:      "Drawing",
+				Title:     title,
+				Thumbnail: getString(d, "file_path"),
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(d, "created_at"),
+				Link:      fmt.Sprintf("/drawings#drawing-%d", getInt64(d, "id")),
+			})
+		}
+	}
+
+	// 7. Media
+	media, _ := database.GetMedia(userID, "")
+	for _, m := range media {
+		title := getString(m, "title")
+		tags := getTags(m)
+		score := scoreItem(title, "", "", tags)
+		if score > 0 {
+			globalResults = append(globalResults, GlobalSearchResult{
+				ID:        getInt64(m, "id"),
+				Type:      "Media",
+				Title:     title,
+				Thumbnail: getString(m, "file_path"),
+				Tags:      tags,
+				Score:     score,
+				CreatedAt: getString(m, "created_at"),
+				Link:      fmt.Sprintf("/media#media-%d", getInt64(m, "id")),
+			})
+		}
+	}
+
+	// Sort globally by score descending
+	for i := 0; i < len(globalResults); i++ {
+		for j := i + 1; j < len(globalResults); j++ {
+			if globalResults[j].Score > globalResults[i].Score {
+				globalResults[i], globalResults[j] = globalResults[j], globalResults[i]
+			}
+		}
+	}
+
+	return globalResults
 }
 
 func filterAndSort(items []map[string]interface{}, query string, fields []string) []map[string]interface{} {
@@ -1393,15 +1740,42 @@ func TagSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	allTags, _ := database.GetAllUniqueTags()
 
 	var suggestions []string
-	for _, tag := range allTags {
-		if strings.Contains(strings.ToLower(tag), query) {
-			suggestions = append(suggestions, tag)
+	if query != "" {
+		for _, tag := range allTags {
+			if strings.Contains(strings.ToLower(tag), query) {
+				suggestions = append(suggestions, tag)
+			}
 		}
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 	for _, s := range suggestions {
 		fmt.Fprintf(w, `<option value="%s">`, s)
+	}
+}
+
+func SearchSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
+	query := strings.ToLower(r.URL.Query().Get("q"))
+	allTags, _ := database.GetAllUniqueTags()
+
+	var suggestions []string
+	if query != "" {
+		for _, tag := range allTags {
+			if strings.Contains(strings.ToLower(tag), query) {
+				suggestions = append(suggestions, tag)
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	for _, s := range suggestions {
+		fmt.Fprintf(w, `<div class="suggestion-item" onclick="
+			const input = document.querySelector('input[name=q]'); 
+			input.value='%s'; 
+			input.focus(); 
+			htmx.trigger(input, 'change');
+            document.getElementById('search-suggestions-dropdown').style.display='none';
+		"><span class="icon is-small mr-2"><i class="fas fa-search"></i></span> Search for tag: <strong>%s</strong></div>`, s, s)
 	}
 }
 
