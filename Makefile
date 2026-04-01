@@ -40,6 +40,10 @@ docker-rebuild: ## Completely rebuild and restart Docker containers
 	docker compose build --no-cache
 	docker compose up -d
 
+docker-push: ## Build and push the multi-architecture docker image
+	@echo "Building and pushing multi-architecture image..."
+	docker buildx build --platform linux/amd64,linux/arm64 -t bloubanibou/infokeep:latest --push .
+
 docker-logs: ## Tail the Docker logs
 	docker compose logs -f
 

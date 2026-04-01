@@ -42,6 +42,10 @@ switch ($Target) {
         docker compose build --no-cache
         docker compose up -d
     }
+    "docker-push" {
+        Write-Host "Building and pushing multi-architecture Docker image..."
+        docker buildx build --platform linux/amd64,linux/arm64 -t bloubanibou/infokeep:latest --push .
+    }
     "docker-logs" {
         docker compose logs -f
     }
@@ -56,6 +60,7 @@ switch ($Target) {
         Write-Host "  docker-up         Start the application in Docker (background)"
         Write-Host "  docker-down       Stop and remove the Docker containers"
         Write-Host "  docker-rebuild    Completely rebuild and restart Docker containers"
+        Write-Host "  docker-push       Build and push the multi-architecture Docker image to Docker Hub"
         Write-Host "  docker-logs       Tail the Docker logs"
     }
     default {

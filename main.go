@@ -13,7 +13,10 @@ import (
 
 func main() {
 	// Initialize database
-	dbPath := "infokeep.db"
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "infokeep.db"
+	}
 	if err := database.InitDB(dbPath); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
@@ -148,9 +151,14 @@ func main() {
 		r.Delete("/share/{hash}", handlers.RevokeShareLinkHandler)
 	})
 
-	log.Println("Server starting on :8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	log.Printf("Server starting on :%s\n", port)
+
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
 }
