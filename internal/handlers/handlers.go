@@ -2054,7 +2054,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		RenderTemplate(w, "login.html", nil)
+		data := map[string]interface{}{
+			"Error":      r.URL.Query().Get("error"),
+			"Tags":       nil,
+			"ActiveTag":  "",
+			"Registered": false,
+		}
+		RenderTemplate(w, "login.html", data)
 		return
 	}
 
@@ -2101,7 +2107,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		RenderTemplate(w, "register.html", nil)
+		data := map[string]interface{}{
+			"Error":      r.URL.Query().Get("error"),
+			"Tags":       nil,
+			"ActiveTag":  "",
+		}
+		RenderTemplate(w, "register.html", data)
 		return
 	}
 
